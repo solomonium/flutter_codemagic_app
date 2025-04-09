@@ -1,0 +1,18 @@
+{
+    "sourceFile": "codemagic.yaml",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 0,
+            "patches": [
+                {
+                    "date": 1744191555127,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                }
+            ],
+            "date": 1744191555127,
+            "name": "Commit-0",
+            "content": "workflows:\n    android-workflow-id:\n        name: Android Sample Workflow"
+        }
+    ]
+}
