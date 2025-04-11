@@ -13,7 +13,7 @@ workflows:
       - name: Install Flutter dependencies
         script: flutter pub get
       - name: Build AAB with Flutter
-        flutter build appbundle --release
+        script: flutter build appbundle --release
 
     artifacts:
       - build/**/outputs/**/*.aab
