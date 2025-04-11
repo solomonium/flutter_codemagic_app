@@ -10,8 +10,8 @@ workflows:
     scripts:
       - name: Set up local.properties
         echo "flutter.sdk=$HOME/programs/flutter" > "$CM_BUILD_DIR/android/local.properties"
-      - name: Get Flutter packages
-        flutter pub get
+      - name: Install Flutter dependencies
+        script: flutter pub get
       - name: Build AAB with Flutter
         flutter build appbundle --release
 
