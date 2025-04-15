@@ -6,7 +6,7 @@ workflows:
     environment:
       flutter: stable
       android_signing:
-        - codemagic
+        - cm_keystore_credentials
     scripts:
       - name: Set up local.properties
         script: echo "flutter.sdk=$HOME/programs/flutter" > "$CM_BUILD_DIR/android/local.properties"
