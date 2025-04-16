@@ -7,6 +7,8 @@ workflows:
       flutter: stable
       android_signing:
         - cm_keystore_credentials
+      groups:
+        - google_credentials
     scripts:
       - name: Set up local.properties
         script: echo "flutter.sdk=$HOME/programs/flutter" > "$CM_BUILD_DIR/android/local.properties"
@@ -19,3 +21,9 @@ workflows:
       - build/**/outputs/**/*.aab
       - build/**/outputs/**/mapping.txt
       - flutter_drive.log
+    publishing:
+      email:
+        recipients:
+          - solomon@codemagic.io
+      google_play:
+        credentials: $GCLOUD_SERVICE_ACCOUNT_CREDENTIALS
