@@ -16,9 +16,9 @@ workflows:
         script: flutter pub get
       - name: Build AAB with Flutter
         script:
-          CURRENT_BUILD_VERSION=$(google-play get-latest-build-number --package-name "com.solo.flutter_codemagic_app" --tracks="internal")
-          echo "versionCode=$((CURRENT_BUILD_VERSION + 1))" > "$CM_BUILD_DIR/version.properties"
-          flutter build appbundle --release --build-number=$(($CURRENT_BUILD_VERSION + 1))
+          CURRENT_BUILD_NUMBER=$(google-play get-latest-build-number --package-name "com.solo.flutter_codemagic_app" --tracks="internal")
+          echo "versionCode=$((CURRENT_BUILD_NUMBER + 1))" > "$CM_BUILD_DIR/version.properties"
+          flutter build appbundle --release --build-number=$(($CURRENT_BUILD_NUMBER + 1))
 
     artifacts:
       - build/**/outputs/**/*.aab
@@ -30,5 +30,5 @@ workflows:
           - solomon@codemagic.io
       google_play:
         track: internal
-        credentials: $GCLOUD_SERVICE_ACCOUNT_CREDENTIALS
+        credentials: $GOOGLE_PLAY_SERVICE_ACCOUNT_CREDENTIALS
         submit_as_draft: true
