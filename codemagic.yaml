@@ -5,12 +5,14 @@ workflows:
     max_build_duration: 120
     environment:
       flutter: stable
+      xcode: latest
+      cocoapods: default
       ios_signing:
         distribution_type: app_store # or: ad_hoc | development | enterprise
         bundle_identifier: com.solo.flutterCodemagicApp
     scripts:
       - name: Set up code signing settings on Xcode project
-        script: code-project use-profiles
+        script: xcode-project use-profiles
       - name: Get Flutter packages
         script: flutter pub get
       - name: Install pods
