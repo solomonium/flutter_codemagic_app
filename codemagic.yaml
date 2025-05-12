@@ -17,6 +17,9 @@ workflows:
         script: flutter pub get
       - name: Install pods
         script: find . -name "Podfile" -execdir pod install \;
+      - name: Validate Assets
+        script: |
+          xcrun actool Runner/Assets.xcassets --compile Runner/Assets.car --platform iphoneos --minimum-deployment-target 12.0
       - name: Flutter build ipa
         script: |
           flutter build ipa --release \
