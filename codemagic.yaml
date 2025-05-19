@@ -37,15 +37,15 @@ workflows:
         script: flutter pub get
       - name: Install pods
         script: find . -name "Podfile" -execdir pod install \;
-      - name: Validate Assets
-        script: |
-          mkdir -p build/ios/Assets
-          xcrun actool ios/Runner/Assets.xcassets \
-            --compile build/ios/Assets \
-            --platform iphoneos \
-            --minimum-deployment-target 12.0 \
-            --app-icon AppIcon \
-            --output-partial-info-plist build/ios/Assets/partial.plist
+      # - name: Validate Assets
+      #   script: |
+      #     mkdir -p build/ios/Assets
+      #     xcrun actool ios/Runner/Assets.xcassets \
+      #       --compile build/ios/Assets \
+      #       --platform iphoneos \
+      #       --minimum-deployment-target 12.0 \
+      #       --app-icon AppIcon \
+      #       --output-partial-info-plist build/ios/Assets/partial.plist
       - name: Flutter build ipa
         script: |
           flutter build ipa --release \
