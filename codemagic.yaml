@@ -28,27 +28,26 @@ workflows:
         script: find . -name "Podfile" -execdir pod install \;
       - name: Flutter build ipa
         script: |
-          # Get current store version (1.0.3)
-          STORE_VERSION=$(app-store-connect get-latest-app-store-version "$APP_STORE_ID || echo "1.0.0")
+          # 1. Get current App Store version (e.g. "1.0.3")
+          STORE_VERSION=$(app-store-connect get-latest-app-store-version "$APP_STORE_ID" || echo "1.0.0")
           echo "Current Store Version: $STORE_VERSION"
-
-          # Calculate new version (1.0.4)
-          MAJOR=$(echo $STORE_VERSION | cut -d. -f1)
-          MINOR=$(echo $STORE_VERSION | cut -d. -f2)
-          PATCH=$(echo $STORE_VERSION | cut -d. -f3)
+          # 2. Calculate new version (1.0.3 → 1.0.4)
+          MAJOR=$(echo "$STORE_VERSION" | cut -d. -f1)
+          MINOR=$(echo "$STORE_VERSION" | cut -d. -f2)
+          PATCH=$(echo "$STORE_VERSION" | cut -d. -f3)
           NEW_PATCH=$((PATCH + 1))
-          NEW_VERSION="$MAJOR.$MINOR.$NEW_PATCH"
-          # Get and increment build number
-          CURRENT_BUILD=$(app-store-connect get-latest-testflight-build-number "$APP_STORE_ID")
-          NEW_BUILD=$((CURRENT_BUILD + 1))
-          # Update pubspec.yaml
-          sed -i '' "s/version: .*/version: $NEW_VERSION+$NEW_BUILD/" pubspec.yaml
-
-          echo "Building $NEW_VERSION+$NEW_BUILD (Current Store: $STORE_VERSION+$CURRENT_BUILD)"
+          NEW_VERSION="$MAJOR.$MINOR.$NEW_PATCH"  # This becomes your --build-name
+          # 3. Get and increment build number (for +NNN suffix)
+          CURRENT_BUILD=$(app-store-connect get-latest-testflight-build-number "$APP_STORE_ID" || echo 0)
+          NEW_BUILD=$((CURRENT_BUILD + 1))  # This becomes your --build-number
+          # 4. Update pubspec.yaml
+          sed -i '' "s/^version: .*/version: $NEW_VERSION+$NEW_BUILD/" pubspec.yaml
+          # 5. Build with clear logging
+          echo "Building version $NEW_VERSION+$NEW_BUILD (Current Store: $STORE_VERSION+$CURRENT_BUILD)"
           flutter build ipa --release \
-            --build-name="$VERSION_NAME" \
+            --build-name="$NEW_VERSION" \
             --build-number="$NEW_BUILD" \
-            --export-options-plist="/Users/builder/export_options.plist
+            --export-options-plist="/Users/builder/export_options.plist"
     artifacts:
       - build/ios/ipa/*.ipa
       - /tmp/xcodebuild_logs/*.log
