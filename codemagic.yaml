@@ -1,8 +1,14 @@
 workflows:
-  ios-workflow:
+  main_pr_workflow:
     name: iOS Workflow
     instance_type: mac_mini_m2
     max_build_duration: 120
+    triggering:
+      events:
+        - pull_request
+      branch_patterns:
+        - pattern: "main"
+          include: true
     environment:
       flutter: stable
       xcode: latest
@@ -19,19 +25,30 @@ workflows:
         script: flutter pub get
       - name: Install pods
         script: find . -name "Podfile" -execdir pod install \;
-      - name: Validate Assets
+      - name: Flutter build ipa
         script: |
-          mkdir -p build/ios/Assets
-          xcrun actool ios/Runner/Assets.xcassets \
-            --compile build/ios/Assets \
-            --platform iphoneos \
-            --minimum-deployment-target 12.0 \
-            --app-icon AppIcon \
-            --output-partial-info-plist build/ios/Assets/partial.plist
+          # Get current build number from TestFlight
+          CURRENT_BUILD=$(app-store-connect get-latest-testflight-build-number "$APP_ID")
+          echo "Current TestFlight build number: $CURRENT_BUILD"
+
+          # Get current TestFlight build number
+          CURRENT_BUILD=$(app-store-connect get-latest-testflight-build-number "$APP_ID")
+          NEW_BUILD=$((CURRENT_BUILD + 1))
+
+          # Get version name from pubspec.yaml (e.g. "1.0.4")
+          VERSION_NAME=$(grep 'version:' pubspec.yaml | awk '{print $2}' | cut -d+ -f1)
+
+          echo "Building version $VERSION_NAME+$NEW_BUILD (Previous: $CURRENT_BUILD)"
+
+          flutter build ipa --release \
+            --build-name=$VERSION_NAME \  # Now dynamic from pubspec.yaml
+            --build-number=$NEW_BUILD \
+            --export-options-plist=/Users/builder/export_options.plist
       - name: Flutter build ipa
         script: |
           flutter build ipa --release \
-            --build-name=1.0.1 \
+            --build-name=1.0.4 \
+            --build-number=$(($(app-store-connect get-latest-testflight-build-number "$APP_ID") + 1)) \
             --export-options-plist=/Users/builder/export_options.plist
     artifacts:
       - build/ios/ipa/*.ipa
