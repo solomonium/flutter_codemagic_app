@@ -29,11 +29,11 @@ workflows:
       - name: Flutter build ipa
         script: |
           # Get current build number from TestFlight
-          CURRENT_BUILD=$(app-store-connect get-latest-testflight-build-number "$APP_ID")
+          CURRENT_BUILD=$(app-store-connect get-latest-app-store-build-number "$APP_ID")
           echo "Current TestFlight build number: $CURRENT_BUILD"
 
           # Get current TestFlight build number
-          CURRENT_BUILD=$(app-store-connect get-latest-testflight-build-number "$APP_ID")
+          CURRENT_BUILD=$(app-store-connect get-latest-app-store-build-number "$APP_ID")
           NEW_BUILD=$((CURRENT_BUILD + 1))
 
           # Get version name from pubspec.yaml (e.g. "1.0.4")
