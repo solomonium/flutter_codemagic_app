@@ -6,19 +6,8 @@ workflows:
     triggering:
       events:
         - push
-        # - pull_request
-        # - pull_request_labeled
-        # - tag
       branch_patterns:
         - pattern: "dev"
-          include: true
-          source: true
-      tag_patterns:
-        - pattern: "*"
-          include: true
-        - pattern: excluded-tag
-          include: false
-        - pattern: included-tag
           include: true
       cancel_previous_builds: false
     environment:
