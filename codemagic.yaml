@@ -29,7 +29,7 @@ workflows:
       - name: Flutter build ipa
         script: |
           # Get current store version (1.0.3)
-          STORE_VERSION=$(app-store-connect get-latest-app-store-version "$APP_STORE_ID")
+          STORE_VERSION=$(app-store-connect get-latest-app-store-version "$APP_STORE_ID || echo "1.0.0")
           echo "Current Store Version: $STORE_VERSION"
 
           # Calculate new version (1.0.4)
