@@ -26,59 +26,59 @@ workflows:
         script: flutter pub get
       - name: Install pods
         script: find . -name "Podfile" -execdir pod install \;
-      - name: Auto-Increment Version and Build
+      # - name: Auto-Increment Version and Build
+      #   script: |
+      #     # 1. Get current App Store version (e.g. "1.0.3")
+      #     TF_VERSION=$(app-store-connect get-latest-testflight-build-number "$APP_STORE_ID" --format json | jq -r '.version' || grep 'version:' pubspec.yaml | awk '{print $2}' | cut -d+ -f1)
+      #     echo "Detected Version: $TF_VERSION"
+
+      #     # 2. Increment patch version (1.0.3 → 1.0.4)
+      #     MAJOR=$(echo "$TF_VERSION" | cut -d. -f1)
+      #     MINOR=$(echo "$TF_VERSION" | cut -d. -f2)
+      #     PATCH=$(echo "$TF_VERSION" | cut -d. -f3)
+      #     NEW_PATCH=$((PATCH + 1))
+      #     NEW_VERSION="$MAJOR.$MINOR.$NEW_PATCH"
+
+      #     # 3. Get and increment TestFlight build number (748 → 749)
+      #     CURRENT_BUILD=$(app-store-connect get-latest-testflight-build-number "$APP_STORE_ID" || echo 0)
+      #     NEW_BUILD=$((CURRENT_BUILD + 1))
+
+      #     # 4. Update all version locations
+      #     # pubspec.yaml
+      #     sed -i '' "s/^version: .*/version: $NEW_VERSION+$NEW_BUILD/" pubspec.yaml
+
+      #     # iOS Info.plist
+      #     PLIST="ios/Runner/Info.plist"
+      #     /usr/libexec/PlistBuddy -c "Set :CFBundleShortVersionString $NEW_VERSION" "$PLIST"
+      #     /usr/libexec/PlistBuddy -c "Set :CFBundleVersion $NEW_BUILD" "$PLIST"
+
+      #     # 5. Build with new versions
+      #     echo "Building $NEW_VERSION+$NEW_BUILD (Prev: $STORE_VERSION+$CURRENT_BUILD)"
+
+      #     flutter build ipa --release \
+      #       --build-name="$NEW_VERSION" \
+      #       --build-number="$NEW_BUILD" \
+      #       --export-options-plist="/Users/builder/export_options.plist"
+
+      # 6. Publish to TestFlight (optional)
+      # app-store-connect publish --path build/ios/ipa/*.ipa
+      - name: Flutter build ipa
         script: |
-          # 1. Get current App Store version (e.g. "1.0.3")
-          TF_VERSION=$(app-store-connect get-latest-testflight-build-number "$APP_STORE_ID" --format json | jq -r '.version' || grep 'version:' pubspec.yaml | awk '{print $2}' | cut -d+ -f1)
-          echo "Detected Version: $TF_VERSION"
+          # 1. Set versions (override detection)
+          VERSION="1.0.4"
+          NEW_BUILD=749  # Must exceed last TestFlight build (748)
 
-          # 2. Increment patch version (1.0.3 → 1.0.4)
-          MAJOR=$(echo "$TF_VERSION" | cut -d. -f1)
-          MINOR=$(echo "$TF_VERSION" | cut -d. -f2)
-          PATCH=$(echo "$TF_VERSION" | cut -d. -f3)
-          NEW_PATCH=$((PATCH + 1))
-          NEW_VERSION="$MAJOR.$MINOR.$NEW_PATCH"
+          # 2. Update pubspec.yaml
+          sed -i '' "s/^version: .*/version: $VERSION+$NEW_BUILD/" pubspec.yaml
 
-          # 3. Get and increment TestFlight build number (748 → 749)
-          CURRENT_BUILD=$(app-store-connect get-latest-testflight-build-number "$APP_STORE_ID" || echo 0)
-          NEW_BUILD=$((CURRENT_BUILD + 1))
-
-          # 4. Update all version locations
-          # pubspec.yaml
-          sed -i '' "s/^version: .*/version: $NEW_VERSION+$NEW_BUILD/" pubspec.yaml
-
-          # iOS Info.plist
           PLIST="ios/Runner/Info.plist"
-          /usr/libexec/PlistBuddy -c "Set :CFBundleShortVersionString $NEW_VERSION" "$PLIST"
+          /usr/libexec/PlistBuddy -c "Set :CFBundleShortVersionString $VERSION" "$PLIST"
           /usr/libexec/PlistBuddy -c "Set :CFBundleVersion $NEW_BUILD" "$PLIST"
-
-          # 5. Build with new versions
-          echo "Building $NEW_VERSION+$NEW_BUILD (Prev: $STORE_VERSION+$CURRENT_BUILD)"
 
           flutter build ipa --release \
             --build-name="$NEW_VERSION" \
             --build-number="$NEW_BUILD" \
             --export-options-plist="/Users/builder/export_options.plist"
-
-    # 6. Publish to TestFlight (optional)
-    # app-store-connect publish --path build/ios/ipa/*.ipa
-    # - name: Flutter build ipa
-    #   script: |
-    #     # 1. Set versions (override detection)
-    #     VERSION="1.0.4"
-    #     NEW_BUILD=749  # Must exceed last TestFlight build (748)
-
-    #     # 2. Update pubspec.yaml
-    #     sed -i '' "s/^version: .*/version: $VERSION+$NEW_BUILD/" pubspec.yaml
-
-    #     PLIST="ios/Runner/Info.plist"
-    #     /usr/libexec/PlistBuddy -c "Set :CFBundleShortVersionString $VERSION" "$PLIST"
-    #     /usr/libexec/PlistBuddy -c "Set :CFBundleVersion $NEW_BUILD" "$PLIST"
-
-    #     flutter build ipa --release \
-    #       --build-name="$NEW_VERSION" \
-    #       --build-number="$NEW_BUILD" \
-    #       --export-options-plist="/Users/builder/export_options.plist"
     artifacts:
       - build/ios/ipa/*.ipa
       - /tmp/xcodebuild_logs/*.log
