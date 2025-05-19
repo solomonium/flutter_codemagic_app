@@ -28,22 +28,18 @@ workflows:
         script: find . -name "Podfile" -execdir pod install \;
       - name: Flutter build ipa
         script: |
-          # 1. Get current App Store version (e.g. "1.0.3")
-          STORE_VERSION=$(app-store-connect get-latest-app-store-version "$APP_STORE_ID" || echo "1.0.0")
-          echo "Current Store Version: $STORE_VERSION"
-          # 2. Calculate new version (1.0.3 → 1.0.4)
-          MAJOR=$(echo "$STORE_VERSION" | cut -d. -f1)
-          MINOR=$(echo "$STORE_VERSION" | cut -d. -f2)
-          PATCH=$(echo "$STORE_VERSION" | cut -d. -f3)
-          NEW_PATCH=$((PATCH + 1))
-          NEW_VERSION="$MAJOR.$MINOR.$NEW_PATCH"  # This becomes your --build-name
-          # 3. Get and increment build number (for +NNN suffix)
+          # 1. MANUALLY SET TARGET VERSION (override auto-detection)
+          TARGET_VERSION="1.0.4"
+
+          # 2. Get current TestFlight build number
           CURRENT_BUILD=$(app-store-connect get-latest-testflight-build-number "$APP_STORE_ID" || echo 0)
-          NEW_BUILD=$((CURRENT_BUILD + 1))  # This becomes your --build-number
-          # 4. Update pubspec.yaml
-          sed -i '' "s/^version: .*/version: $NEW_VERSION+$NEW_BUILD/" pubspec.yaml
-          # 5. Build with clear logging
-          echo "Building version $NEW_VERSION+$NEW_BUILD (Current Store: $STORE_VERSION+$CURRENT_BUILD)"
+          NEW_BUILD=$((CURRENT_BUILD + 1))
+
+          # 3. Update pubspec.yaml
+          sed -i '' "s/^version: .*/version: $TARGET_VERSION+$NEW_BUILD/" pubspec.yaml
+
+          # 4. Build with explicit versions
+          echo "FORCE BUILDING: $TARGET_VERSION+$NEW_BUILD"
           flutter build ipa --release \
             --build-name="$NEW_VERSION" \
             --build-number="$NEW_BUILD" \
