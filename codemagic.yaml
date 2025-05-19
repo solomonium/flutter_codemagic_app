@@ -28,12 +28,15 @@ workflows:
         script: find . -name "Podfile" -execdir pod install \;
       - name: Flutter build ipa
         script: |
-          # Get current TestFlight build number
-          CURRENT_BUILD=$(app-store-connect get-latest-testflight-build-number "$APP_STORE_ID")
-          NEW_BUILD=$((CURRENT_BUILD + 1))
-          # Get version name from pubspec.yaml
+          # Get version components
           VERSION_NAME=$(grep 'version:' pubspec.yaml | awk '{print $2}' | cut -d+ -f1)
-          echo "Building version $VERSION_NAME+$NEW_BUILD (Previous: $CURRENT_BUILD)"
+          CURRENT_BUILD=$(grep 'version:' pubspec.yaml | awk -F'+' '{print $2}')
+          NEW_BUILD=$((CURRENT_BUILD + 1))
+          # Update pubspec with incremented build number
+          sed -i '' "s/version: .*/version: $VERSION_NAME+$NEW_BUILD/" pubspec.yaml
+          # Get TestFlight build number for reference (optional)
+          TF_BUILD=$(app-store-connect get-latest-testflight-build-number "$APP_STORE_ID" || echo 0)
+          echo "Building $VERSION_NAME+$NEW_BUILD (TestFlight: $TF_BUILD)"
           flutter build ipa --release \
             --build-name="$VERSION_NAME" \
             --build-number="$NEW_BUILD" \
