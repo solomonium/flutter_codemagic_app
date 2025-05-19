@@ -6,11 +6,11 @@ workflows:
     triggering:
       events:
         - push
-        - pull_request
-        - pull_request_labeled
-        - tag
+        # - pull_request
+        # - pull_request_labeled
+        # - tag
       branch_patterns:
-        - pattern: "*"
+        - pattern: "dev"
           include: true
           source: true
       tag_patterns:
