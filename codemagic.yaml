@@ -17,8 +17,8 @@ workflows:
       ios_signing:
         distribution_type: app_store # or: ad_hoc | development | enterprise
         bundle_identifier: com.solo.flutterCodemagicApp
-    # integrations:
-    #   app_store_connect: SolomonAPIKey
+    integrations:
+      app_store_connect: SolomonAPIKey
     scripts:
       - name: Set up code signing settings on Xcode project
         script: xcode-project use-profiles
@@ -84,9 +84,9 @@ workflows:
       - /tmp/xcodebuild_logs/*.log
       - flutter_drive.log
 
-    publishing:
-      app_store_connect:
-        auth: integration
+    # publishing:
+    #   app_store_connect:
+    #     auth: integration
 # workflows:
 #   android-workflow:
 #     name: Android Sample Workflow
