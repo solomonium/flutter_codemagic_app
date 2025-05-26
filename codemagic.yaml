@@ -14,6 +14,8 @@ workflows:
       flutter: stable
       xcode: latest
       cocoapods: default
+      vars:
+        SHOREBIRD_TOKEN: $SHOREBIRD_TOKEN # Optional: For Shorebird auto-updates
       ios_signing:
         distribution_type: app_store # or: ad_hoc | development | enterprise
         bundle_identifier: com.solo.flutterCodemagicApp
@@ -64,6 +66,15 @@ workflows:
       # app-store-connect publish --path build/ios/ipa/*.ipa
       - name: Build unsigned .app for simulator
         script: flutter build ios --simulator
+      - name: Install Shorebird CLI
+        script: |
+          curl --proto '=https' --tlsv1.2 https://raw.githubusercontent.com/shorebirdtech/install/main/install.sh -sSf | bash
+      - name: Login to Shorebird
+        script: |
+          shorebird login --token $SHOREBIRD_TOKEN
+      - name: Run Shorebird Release
+        script: |
+          shorebird release --flavor production --artifact=.ipa  # or .ipa for iOS
       # - name: Flutter build ipa
       #   script: |
       #     # 1. Set versions (override detection)
