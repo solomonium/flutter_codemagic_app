@@ -69,8 +69,11 @@ workflows:
       - name: Install Shorebird CLI
         script: |
           curl --proto '=https' --tlsv1.2 https://raw.githubusercontent.com/shorebirdtech/install/main/install.sh -sSf | bash
+          export PATH="/Users/builder/.shorebird/bin:$PATH"
+          echo "PATH updated: $PATH"
       - name: Login to Shorebird
         script: |
+          which shorebird || echo "Shorebird not found in PATH"
           shorebird login --token $SHOREBIRD_TOKEN
       - name: Run Shorebird Release
         script: |
