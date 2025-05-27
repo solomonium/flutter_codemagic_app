@@ -80,7 +80,6 @@ workflows:
         script: |
           # Use CI token (non-interactive)
           shorebird login:ci --token $SHOREBIRD_TOKEN
-
           # Verify authentication
           shorebird doctor
       - name: Run Shorebird Release
