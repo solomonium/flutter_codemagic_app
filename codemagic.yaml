@@ -69,25 +69,20 @@ workflows:
       - name: Install Shorebird CLI
         script: |
           curl --proto '=https' --tlsv1.2 https://raw.githubusercontent.com/shorebirdtech/install/main/install.sh -sSf | bash
-          echo 'export PATH="/Users/builder/.shorebird/bin:$PATH"' >> ~/.zshrc
-          source ~/.zshrc
+          echo 'export PATH="/Users/builder/.shorebird/bin:$PATH"' >> ~/.bash_profile
+          source ~/.bash_profile
 
           # Verify installation
           which shorebird || echo "Shorebird not found in PATH"
           shorebird --version
       - name: Authenticate
         script: |
-          source ~/.zshrc
-          if [ -n "$SHOREBIRD_TOKEN" ]; then
-            shorebird login:ci --token $SHOREBIRD_TOKEN
-          else
-            # Fallback to interactive login
-            echo "Y" | shorebird login
-          fi
+          /Users/builder/.shorebird/bin/shorebird login:ci --token $SHOREBIRD_TOKEN
+          /Users/builder/.shorebird/bin/shorebird doctor
           shorebird doctor
       - name: Run Shorebird Release
         script: |
-          shorebird release --flavor production --artifact=.ipa  # or .ipa for iOS
+          /Users/builder/.shorebird/bin/shorebird release --flavor production --artifact=ipa
       # - name: Flutter build ipa
       #   script: |
       #     # 1. Set versions (override detection)
