@@ -14,8 +14,8 @@ workflows:
       flutter: stable
       xcode: latest
       cocoapods: default
-      vars:
-        SHOREBIRD_TOKEN: $SHOREBIRD_TOKEN # Optional: For Shorebird auto-updates
+      groups:
+        - shorebird_credentials # Optional: For Shorebird auto-updates
       ios_signing:
         distribution_type: app_store # or: ad_hoc | development | enterprise
         bundle_identifier: com.solo.flutterCodemagicApp
@@ -69,11 +69,20 @@ workflows:
       - name: Install Shorebird CLI
         script: |
           curl --proto '=https' --tlsv1.2 https://raw.githubusercontent.com/shorebirdtech/install/main/install.sh -sSf | bash
-          export PATH="$HOME/.shorebird/bin:$PATH"
-          echo "Y" | shorebird login
+          export PATH="/Users/builder/.shorebird/bin:$PATH"
+          echo "PATH updated: $PATH"
+          shorebird --version
+        # export PATH="$HOME/.shorebird/bin:$PATH"
       # - name: Login to Shorebird
       #   script: |
       #     /Users/builder/.shorebird/bin/shorebird login --token $SHOREBIRD_TOKEN
+      - name: Authenticate
+        script: |
+          # Use CI token (non-interactive)
+          shorebird login:ci --token $SHOREBIRD_TOKEN
+
+          # Verify authentication
+          shorebird doctor
       - name: Run Shorebird Release
         script: |
           shorebird release --flavor production --artifact=.ipa  # or .ipa for iOS
