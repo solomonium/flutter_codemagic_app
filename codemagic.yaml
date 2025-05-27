@@ -69,13 +69,11 @@ workflows:
       - name: Install Shorebird CLI
         script: |
           curl --proto '=https' --tlsv1.2 https://raw.githubusercontent.com/shorebirdtech/install/main/install.sh -sSf | bash
-          echo "Checking Shorebird installation:"
-          ls -la /Users/builder/.shorebird/bin/shorebird || echo "Shorebird binary not found!"
-          chmod +x /Users/builder/.shorebird/bin/shorebird || true
-          /Users/builder/.shorebird/bin/shorebird --version || echo "Shorebird check failed"
-      - name: Login to Shorebird
-        script: |
-          /Users/builder/.shorebird/bin/shorebird login --token $SHOREBIRD_TOKEN
+          export PATH="$HOME/.shorebird/bin:$PATH"
+          echo "Y" | shorebird login
+      # - name: Login to Shorebird
+      #   script: |
+      #     /Users/builder/.shorebird/bin/shorebird login --token $SHOREBIRD_TOKEN
       - name: Run Shorebird Release
         script: |
           shorebird release --flavor production --artifact=.ipa  # or .ipa for iOS
