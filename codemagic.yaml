@@ -72,7 +72,7 @@ workflows:
           export PATH="$HOME/.shorebird/bin:$PATH"
           echo "PATH updated: $PATH"
           shorebird --version
-          # export PATH="/Users/builder/.shorebird/bin:$PATH"
+        # export PATH="/Users/builder/.shorebird/bin:$PATH"
       # - name: Login to Shorebird
       #   script: |
       #     /Users/builder/.shorebird/bin/shorebird login --token $SHOREBIRD_TOKEN
