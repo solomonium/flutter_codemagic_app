@@ -14,9 +14,9 @@ workflows:
       flutter: stable
       xcode: latest
       cocoapods: default
-      groups:
-        # - appstore_credentials
-        # - shorebird_credentials
+      # groups:
+      #   # - appstore_credentials
+      # - shorebird_credentials
       ios_signing:
         distribution_type: app_store
         bundle_identifier: com.solo.flutterCodemagicApp
