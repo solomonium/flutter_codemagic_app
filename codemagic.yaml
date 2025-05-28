@@ -19,8 +19,8 @@ workflows:
       ios_signing:
         distribution_type: app_store # or: ad_hoc | development | enterprise
         bundle_identifier: com.solo.flutterCodemagicApp
-    # integrations:
-    #   app_store_connect: SolomonAPIKey
+    integrations:
+      app_store_connect: SolomonAPIKey
     scripts:
       - name: Set up code signing settings on Xcode project
         script: xcode-project use-profiles
@@ -28,61 +28,61 @@ workflows:
         script: flutter pub get
       - name: Install pods
         script: find . -name "Podfile" -execdir pod install \;
-      # - name: Auto-Increment Version and Build
-      #   script: |
-      #     # 1. Get current App Store version (e.g. "1.0.3")
-      #     TF_VERSION=$(app-store-connect get-latest-testflight-build-number "$APP_STORE_ID" --format json | jq -r '.version' || grep 'version:' pubspec.yaml | awk '{print $2}' | cut -d+ -f1)
-      #     echo "Detected Version: $TF_VERSION"
+      - name: Auto-Increment Version and Build
+        script: |
+          # 1. Get current App Store version (e.g. "1.0.3")
+          TF_VERSION=$(app-store-connect get-latest-testflight-build-number "$APP_STORE_ID" --format json | jq -r '.version' || grep 'version:' pubspec.yaml | awk '{print $2}' | cut -d+ -f1)
+          echo "Detected Version: $TF_VERSION"
 
-      #     # 2. Increment patch version (1.0.3 → 1.0.4)
-      #     MAJOR=$(echo "$TF_VERSION" | cut -d. -f1)
-      #     MINOR=$(echo "$TF_VERSION" | cut -d. -f2)
-      #     PATCH=$(echo "$TF_VERSION" | cut -d. -f3)
-      #     NEW_PATCH=$((PATCH + 1))
-      #     NEW_VERSION="$MAJOR.$MINOR.$NEW_PATCH"
+          # 2. Increment patch version (1.0.3 → 1.0.4)
+          MAJOR=$(echo "$TF_VERSION" | cut -d. -f1)
+          MINOR=$(echo "$TF_VERSION" | cut -d. -f2)
+          PATCH=$(echo "$TF_VERSION" | cut -d. -f3)
+          NEW_PATCH=$((PATCH + 1))
+          NEW_VERSION="$MAJOR.$MINOR.$NEW_PATCH"
 
-      #     # 3. Get and increment TestFlight build number (748 → 749)
-      #     CURRENT_BUILD=$(app-store-connect get-latest-testflight-build-number "$APP_STORE_ID" || echo 0)
-      #     NEW_BUILD=$((CURRENT_BUILD + 1))
+          # 3. Get and increment TestFlight build number (748 → 749)
+          CURRENT_BUILD=$(app-store-connect get-latest-testflight-build-number "$APP_STORE_ID" || echo 0)
+          NEW_BUILD=$((CURRENT_BUILD + 1))
 
-      #     # 4. Update all version locations
-      #     # pubspec.yaml
-      #     sed -i '' "s/^version: .*/version: $NEW_VERSION+$NEW_BUILD/" pubspec.yaml
+          # 4. Update all version locations
+          # pubspec.yaml
+          sed -i '' "s/^version: .*/version: $NEW_VERSION+$NEW_BUILD/" pubspec.yaml
 
-      #     # iOS Info.plist
-      #     PLIST="ios/Runner/Info.plist"
-      #     /usr/libexec/PlistBuddy -c "Set :CFBundleShortVersionString $NEW_VERSION" "$PLIST"
-      #     /usr/libexec/PlistBuddy -c "Set :CFBundleVersion $NEW_BUILD" "$PLIST"
+          # iOS Info.plist
+          PLIST="ios/Runner/Info.plist"
+          /usr/libexec/PlistBuddy -c "Set :CFBundleShortVersionString $NEW_VERSION" "$PLIST"
+          /usr/libexec/PlistBuddy -c "Set :CFBundleVersion $NEW_BUILD" "$PLIST"
 
-      #     # 5. Build with new versions
-      #     echo "Building $NEW_VERSION+$NEW_BUILD (Prev: $STORE_VERSION+$CURRENT_BUILD)"
+          # 5. Build with new versions
+          echo "Building $NEW_VERSION+$NEW_BUILD (Prev: $STORE_VERSION+$CURRENT_BUILD)"
 
-      #     flutter build ipa --release \
-      #       --build-name="$NEW_VERSION" \
-      #       --build-number="$NEW_BUILD" \
-      #       --export-options-plist="/Users/builder/export_options.plist"
+          flutter build ipa --release \
+            --build-name="$NEW_VERSION" \
+            --build-number="$NEW_BUILD" \
+            --export-options-plist="/Users/builder/export_options.plist"
 
       # 6. Publish to TestFlight (optional)
       # app-store-connect publish --path build/ios/ipa/*.ipa
-      - name: Build unsigned .app for simulator
-        script: flutter build ios --simulator
-      - name: Install Shorebird CLI
-        script: |
-          curl --proto '=https' --tlsv1.2 https://raw.githubusercontent.com/shorebirdtech/install/main/install.sh -sSf | bash
-          echo 'export PATH="/Users/builder/.shorebird/bin:$PATH"' >> ~/.bash_profile
-          source ~/.bash_profile
+      # - name: Build unsigned .app for simulator
+      #   script: flutter build ios --simulator
+      # - name: Install Shorebird CLI
+      #   script: |
+      #     curl --proto '=https' --tlsv1.2 https://raw.githubusercontent.com/shorebirdtech/install/main/install.sh -sSf | bash
+      #     echo 'export PATH="/Users/builder/.shorebird/bin:$PATH"' >> ~/.bash_profile
+      #     source ~/.bash_profile
 
-          # Verify installation
-          which shorebird || echo "Shorebird not found in PATH"
-          shorebird --version
-      - name: Authenticate
-        script: |
-          /Users/builder/.shorebird/bin/shorebird login:ci --token $SHOREBIRD_TOKEN
-          /Users/builder/.shorebird/bin/shorebird doctor
-          shorebird doctor
-      - name: Run Shorebird Release
-        script: |
-          /Users/builder/.shorebird/bin/shorebird release --flavor production --artifact=ipa
+      #     # Verify installation
+      #     which shorebird || echo "Shorebird not found in PATH"
+      #     shorebird --version
+      # - name: Authenticate
+      #   script: |
+      #     /Users/builder/.shorebird/bin/shorebird login:ci --token $SHOREBIRD_TOKEN
+      #     /Users/builder/.shorebird/bin/shorebird doctor
+      #     shorebird doctor
+      # - name: Run Shorebird Release
+      #   script: |
+      #     /Users/builder/.shorebird/bin/shorebird release --flavor production --artifact=ipa
       # - name: Flutter build ipa
       #   script: |
       #     # 1. Set versions (override detection)
@@ -106,9 +106,9 @@ workflows:
     #   - flutter_drive.log
     artifacts:
       - build/ios/iphonesimulator/Runner.app
-    # publishing:
-    #   app_store_connect:
-    #     auth: integration
+    publishing:
+      app_store_connect:
+        auth: integration
 # workflows:
 #   android-workflow:
 #     name: Android Sample Workflow
