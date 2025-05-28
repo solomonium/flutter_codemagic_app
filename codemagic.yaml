@@ -82,9 +82,8 @@ workflows:
     publishing:
       app_store_connect:
         auth: integration
-        beta_groups:
-          - Testers
         submit_to_testflight: true
+        submit_to_app_store: false
         release_type: AFTER_APPROVAL
 # workflows:
 #   android-workflow:
