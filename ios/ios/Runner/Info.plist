@@ -23,7 +23,7 @@
 	<key>CFBundleVersion</key>
 	<string>$(FLUTTER_BUILD_NUMBER)</string>
 	<key>LSRequiresIPhoneOS</key>
-	<key>ITSAppUsesNonExemptEncryption</key>  
+	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
 	<true/>
 	<key>UILaunchStoryboardName</key>
