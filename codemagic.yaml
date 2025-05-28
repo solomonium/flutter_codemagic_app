@@ -15,10 +15,10 @@ workflows:
       xcode: latest
       cocoapods: default
       groups:
-        - appstore_credentials # Optional: For Shorebird auto-updates
-        - shorebird_credentials # Optional: For Shorebird auto-updates
+        # - appstore_credentials
+        # - shorebird_credentials
       ios_signing:
-        distribution_type: app_store # or: ad_hoc | development | enterprise
+        distribution_type: app_store
         bundle_identifier: com.solo.flutterCodemagicApp
     integrations:
       app_store_connect: SolomonAPIKey
@@ -73,12 +73,12 @@ workflows:
       #       --build-name="$NEW_VERSION" \
       #       --build-number="$NEW_BUILD" \
       #       --export-options-plist="/Users/builder/export_options.plist"
-    # artifacts:
-    #   - build/ios/ipa/*.ipa
-    #   - /tmp/xcodebuild_logs/*.log
-    #   - flutter_drive.log
     artifacts:
-      - build/ios/iphonesimulator/Runner.app
+      - build/ios/ipa/*.ipa
+      - /tmp/xcodebuild_logs/*.log
+      - flutter_drive.log
+    # artifacts:
+    #   - build/ios/iphonesimulator/Runner.app
     publishing:
       app_store_connect:
         auth: integration
