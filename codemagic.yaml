@@ -14,9 +14,9 @@ workflows:
       flutter: stable
       xcode: latest
       cocoapods: default
-      # groups:
-      #   # - appstore_credentials
-      # - shorebird_credentials
+      groups:
+        - shorebird_credentials
+          # - appstore_credentials
       ios_signing:
         distribution_type: app_store
         bundle_identifier: com.solo.flutterCodemagicApp
@@ -36,17 +36,16 @@ workflows:
       - name: Install Shorebird CLI
         script: |
           curl --proto '=https' --tlsv1.2 https://raw.githubusercontent.com/shorebirdtech/install/main/install.sh -sSf | bash
-          echo 'export PATH="/Users/builder/.shorebird/bin:$PATH"' >> ~/.bash_profile
-          source ~/.bash_profile
+          echo PATH="/Users/builder/.shorebird/bin:$PATH" >> $CM_ENV
 
           # Verify installation
           which shorebird || echo "Shorebird not found in PATH"
           shorebird --version
-      - name: Authenticate
-        script: |
-          /Users/builder/.shorebird/bin/shorebird login:ci --token $SHOREBIRD_TOKEN
-          /Users/builder/.shorebird/bin/shorebird doctor
-          shorebird doctor
+      # - name: Authenticate
+      #   script: |
+      #     /Users/builder/.shorebird/bin/shorebird login:ci --token $SHOREBIRD_TOKEN
+      #     /Users/builder/.shorebird/bin/shorebird doctor
+      #     shorebird doctor
       - name: Run Shorebird Release
         script: |
           /Users/builder/.shorebird/bin/shorebird release --flavor production --artifact=ipa
@@ -81,9 +80,9 @@ workflows:
     publishing:
       app_store_connect:
         auth: integration
-        submit_to_testflight: true
-        submit_to_app_store: true
-        release_type: AFTER_APPROVAL
+        # submit_to_testflight: true
+        # submit_to_app_store: true
+        # release_type: AFTER_APPROVAL
 # workflows:
 #   android-workflow:
 #     name: Android Sample Workflow
