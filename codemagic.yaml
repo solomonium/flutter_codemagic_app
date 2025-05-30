@@ -29,33 +29,32 @@ workflows:
         script: flutter pub get
       - name: Install pods
         script: find . -name "Podfile" -execdir pod install \;
-      - name: Auto-Increment Version and Build
+        # 6. Publish to TestFlight (optional)
+        # app-store-connect publish --path build/ios/ipa/*.ipa
+        # - name: Build unsigned .app for simulator
+        #   script: flutter build ios --simulator
+      - name: Install Shorebird CLI
         script: |
-          flutter build ipa --release \
-            --build-name=1.0.15 \
-            --build-number=$(($(app-store-connect get-latest-testflight-build-number "$APP_ID") + 1)) \
-            --export-options-plist="/Users/builder/export_options.plist"
-      # 6. Publish to TestFlight (optional)
-      # app-store-connect publish --path build/ios/ipa/*.ipa
-      # - name: Build unsigned .app for simulator
-      #   script: flutter build ios --simulator
-      # - name: Install Shorebird CLI
-      #   script: |
-      #     curl --proto '=https' --tlsv1.2 https://raw.githubusercontent.com/shorebirdtech/install/main/install.sh -sSf | bash
-      #     echo 'export PATH="/Users/builder/.shorebird/bin:$PATH"' >> ~/.bash_profile
-      #     source ~/.bash_profile
+          curl --proto '=https' --tlsv1.2 https://raw.githubusercontent.com/shorebirdtech/install/main/install.sh -sSf | bash
+          echo 'export PATH="/Users/builder/.shorebird/bin:$PATH"' >> ~/.bash_profile
+          source ~/.bash_profile
 
-      #     # Verify installation
-      #     which shorebird || echo "Shorebird not found in PATH"
-      #     shorebird --version
-      # - name: Authenticate
-      #   script: |
-      #     /Users/builder/.shorebird/bin/shorebird login:ci --token $SHOREBIRD_TOKEN
-      #     /Users/builder/.shorebird/bin/shorebird doctor
-      #     shorebird doctor
-      # - name: Run Shorebird Release
-      #   script: |
-      #     /Users/builder/.shorebird/bin/shorebird release --flavor production --artifact=ipa
+          # Verify installation
+          which shorebird || echo "Shorebird not found in PATH"
+          shorebird --version
+      - name: Authenticate
+        script: |
+          /Users/builder/.shorebird/bin/shorebird login:ci --token $SHOREBIRD_TOKEN
+          /Users/builder/.shorebird/bin/shorebird doctor
+          shorebird doctor
+      - name: Run Shorebird Release
+        script: |
+          /Users/builder/.shorebird/bin/shorebird release --flavor production --artifact=ipa
+        # script: |
+        #   flutter build ipa --release \
+        #     --build-name=1.0.15 \
+        #     --build-number=$(($(app-store-connect get-latest-testflight-build-number "$APP_ID") + 1)) \
+        #     --export-options-plist="/Users/builder/export_options.plist"
       # - name: Flutter build ipa
       #   script: |
       #     # 1. Set versions (override detection)
