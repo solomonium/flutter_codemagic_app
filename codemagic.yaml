@@ -33,14 +33,19 @@ workflows:
         # app-store-connect publish --path build/ios/ipa/*.ipa
         # - name: Build unsigned .app for simulator
         #   script: flutter build ios --simulator
+        # echo PATH="/Users/builder/.shorebird/bin:$PATH" >> $CM_ENV
       - name: Install Shorebird CLI
         script: |
           curl --proto '=https' --tlsv1.2 https://raw.githubusercontent.com/shorebirdtech/install/main/install.sh -sSf | bash
-          echo PATH="/Users/builder/.shorebird/bin:$PATH" >> $CM_ENV
-
-          # Verify installation
-          which shorebird || echo "Shorebird not found in PATH"
-          shorebird --version
+          if [ ! -f "/Users/builder/.shorebird/bin/shorebird" ]; then
+            echo "❌ Shorebird installation failed!"
+            exit 1
+          fi
+          /Users/builder/.shorebird/bin/shorebird --version
+          echo "✅ Shorebird installed successfully"
+      # Verify installation
+      # which shorebird || echo "Shorebird not found in PATH"
+      # shorebird --version
       # - name: Authenticate
       #   script: |
       #     /Users/builder/.shorebird/bin/shorebird login:ci --token $SHOREBIRD_TOKEN
