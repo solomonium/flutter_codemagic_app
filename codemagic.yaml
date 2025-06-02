@@ -1,158 +1,143 @@
 workflows:
-  ios-workflow:
-    name: iOS Workflow
+  android-workflow:
+    name: Android Sample Workflow
     instance_type: mac_mini_m2
     max_build_duration: 120
-    triggering:
-      events:
-        - push
-      branch_patterns:
-        - pattern: "dev"
-          include: true
-      cancel_previous_builds: false
     environment:
       flutter: stable
-      xcode: latest
-      cocoapods: default
+      android_signing:
+        - cm_keystore_credentials
       groups:
-        - shorebird_credentials
-          # - appstore_credentials
-      ios_signing:
-        distribution_type: app_store
-        bundle_identifier: com.solo.flutterCodemagicApp
-    integrations:
-      app_store_connect: SolomonAPIKey
+        - google_credentials
     scripts:
-      - name: Set up code signing settings on Xcode project
-        script: xcode-project use-profiles
-      - name: Get Flutter packages
+      - name: Set up local.properties
+        script: echo "flutter.sdk=$HOME/programs/flutter" > "$CM_BUILD_DIR/android/local.properties"
+      - name:
+        scripts:
+          - &shorebird_install
+            name: Install Shorebird
+            script: |
+              # Install Shorebird
+              curl --proto '=https' --tlsv1.2 https://raw.githubusercontent.com/shorebirdtech/install/main/install.sh -sSf | bash
+
+              # Add Shorebird to PATH
+              echo PATH="$HOME/.shorebird/bin:$PATH" >> $CM_ENV
+      - name: Install Flutter dependencies
         script: flutter pub get
-      - name: Install pods
-        script: find . -name "Podfile" -execdir pod install \;
-        # 6. Publish to TestFlight (optional)
-        # app-store-connect publish --path build/ios/ipa/*.ipa
-        # - name: Build unsigned .app for simulator
-        #   script: flutter build ios --simulator
-        # echo PATH="/Users/builder/.shorebird/bin:$PATH" >> $CM_ENV
-      - name: Install Shorebird CLI
+      - name: Shorebird Release
         script: |
-          curl --proto '=https' --tlsv1.2 https://raw.githubusercontent.com/shorebirdtech/install/main/install.sh -sSf | bash
-          if [ ! -f "/Users/builder/.shorebird/bin/shorebird" ]; then
-            echo "❌ Shorebird installation failed!"
-            exit 1
-          fi
-          /Users/builder/.shorebird/bin/shorebird --version
-          echo "✅ Shorebird installed successfully"
-      # Verify installation
-      # which shorebird || echo "Shorebird not found in PATH"
-      # shorebird --version
-      # - name: Authenticate
-      #   script: |
-      #     /Users/builder/.shorebird/bin/shorebird login:ci --token $SHOREBIRD_TOKEN
-      #     /Users/builder/.shorebird/bin/shorebird doctor
-      #     shorebird doctor
-      - name: Run Shorebird Release
-        script: |
-          /Users/builder/.shorebird/bin/shorebird release android \
-            --flavor production \
-            --flutter-version "$FLUTTER_VERSION" \
-        # script: |
-        #   flutter build ipa --release \
-        #     --build-name=1.0.15 \
-        #     --build-number=$(($(app-store-connect get-latest-testflight-build-number "$APP_ID") + 1)) \
-        #     --export-options-plist="/Users/builder/export_options.plist"
-      # - name: Flutter build ipa
-      #   script: |
-      #     # 1. Set versions (override detection)
-      #     VERSION="1.0.4"
-      #     NEW_BUILD=750  # Must exceed last TestFlight build (748)
-
-      #     # 2. Update pubspec.yaml
-      #     sed -i '' "s/^version: .*/version: $VERSION+$NEW_BUILD/" pubspec.yaml
-
-      #     PLIST="ios/Runner/Info.plist"
-      #     /usr/libexec/PlistBuddy -c "Set :CFBundleShortVersionString $VERSION" "$PLIST"
-      #     /usr/libexec/PlistBuddy -c "Set :CFBundleVersion $NEW_BUILD" "$PLIST"
-
-      #     flutter build ipa --release \
-      #       --build-name="$NEW_VERSION" \
-      #       --build-number="$NEW_BUILD" \
-      #       --export-options-plist="/Users/builder/export_options.plist"
+          shorebird release android \
+            --flutter-version="$FLUTTER_VERSION"
+      # - name: Build AAB with Flutter
+      #   script:
+      #     CURRENT_BUILD_NUMBER=$(google-play get-latest-build-number --package-name "com.solo.flutter_codemagic_app" --tracks="internal")
+      #     echo "versionCode=$((CURRENT_BUILD_NUMBER + 1))" > "$CM_BUILD_DIR/version.properties"
+      #     flutter build appbundle --release --build-number=$(($CURRENT_BUILD_NUMBER + 1))
     artifacts:
-      - build/ios/ipa/*.ipa
-      - /tmp/xcodebuild_logs/*.log
+      - build/**/outputs/**/*.aab
+      - build/**/outputs/**/mapping.txt
       - flutter_drive.log
-    # artifacts:
-    #   - build/ios/iphonesimulator/Runner.app
     publishing:
-      app_store_connect:
-        auth: integration
-        # submit_to_testflight: true
-        # submit_to_app_store: true
-        # release_type: AFTER_APPROVAL
+      email:
+        recipients:
+          - solomon@codemagic.io
+      google_play:
+        track: internal
+        credentials: $GOOGLE_PLAY_SERVICE_ACCOUNT_CREDENTIALS
+        submit_as_draft: true
 # workflows:
-#   android-workflow:
-#     name: Android Sample Workflow
-#     instance_type: mac_mini_m2
-#     max_build_duration: 120
-#     environment:
-#       flutter: stable
-#       android_signing:
-#         - cm_keystore_credentials
-#       groups:
-#         - google_credentials
-#     scripts:
-#       - name: Set up local.properties
-#         script: echo "flutter.sdk=$HOME/programs/flutter" > "$CM_BUILD_DIR/android/local.properties"
-#       - name: Install Flutter dependencies
-#         script: flutter pub get
-#       - name: Build AAB with Flutter
-#         script:
-#           CURRENT_BUILD_NUMBER=$(google-play get-latest-build-number --package-name "com.solo.flutter_codemagic_app" --tracks="internal")
-#           echo "versionCode=$((CURRENT_BUILD_NUMBER + 1))" > "$CM_BUILD_DIR/version.properties"
-#           flutter build appbundle --release --build-number=$(($CURRENT_BUILD_NUMBER + 1))
+# ios-workflow:
+#   name: iOS Workflow
+#   instance_type: mac_mini_m2
+#   max_build_duration: 120
+#   triggering:
+#     events:
+#       - push
+#     branch_patterns:
+#       - pattern: "dev"
+#         include: true
+#     cancel_previous_builds: false
+#   environment:
+#     flutter: stable
+#     xcode: latest
+#     cocoapods: default
+#     groups:
+#       - shorebird_credentials
+#         # - appstore_credentials
+#     ios_signing:
+#       distribution_type: app_store
+#       bundle_identifier: com.solo.flutterCodemagicApp
+#   integrations:
+#     app_store_connect: SolomonAPIKey
+#   scripts:
+#     - name: Set up code signing settings on Xcode project
+#       script: xcode-project use-profiles
+#     - name: Get Flutter packages
+#       script: flutter pub get
+#     - name: Install pods
+#       script: find . -name "Podfile" -execdir pod install \;
+#       # 6. Publish to TestFlight (optional)
+#       # app-store-connect publish --path build/ios/ipa/*.ipa
+#       # - name: Build unsigned .app for simulator
+#       #   script: flutter build ios --simulator
+#       # echo PATH="/Users/builder/.shorebird/bin:$PATH" >> $CM_ENV
+#     - name: Set Shorebird Release version
+#       script: |
+#         RELEASE_VERSION=$(grep "version:" ./pubspec.yaml | awk '{print $2}')
+#         echo "SHOREBIRD_RELEASE_VERSION=$(echo $RELEASE_VERSION)" >> $CM_ENV
+#     - name: Install Shorebird CLI
+#       script: |
+#         curl --proto '=https' --tlsv1.2 https://raw.githubusercontent.com/shorebirdtech/install/main/install.sh -sSf | bash
+#         if [ ! -f "/Users/builder/.shorebird/bin/shorebird" ]; then
+#           echo "❌ Shorebird installation failed!"
+#           exit 1
+#         fi
+#         /Users/builder/.shorebird/bin/shorebird --version
+#         echo "✅ Shorebird installed successfully"
+#     # Verify installation
+#     # which shorebird || echo "Shorebird not found in PATH"
+#     # shorebird --version
+#     # - name: Authenticate
+#     #   script: |
+#     #     /Users/builder/.shorebird/bin/shorebird login:ci --token $SHOREBIRD_TOKEN
+#     #     /Users/builder/.shorebird/bin/shorebird doctor
+#     #     shorebird doctor
+#     - name: Run Shorebird Release
+#       script: |
+#         /Users/builder/.shorebird/bin/shorebird release android \
+#           --flavor production \
+#           --flutter-version "$FLUTTER_VERSION" \
+#       # script: |
+#       #   flutter build ipa --release \
+#       #     --build-name=1.0.15 \
+#       #     --build-number=$(($(app-store-connect get-latest-testflight-build-number "$APP_ID") + 1)) \
+#       #     --export-options-plist="/Users/builder/export_options.plist"
+#     # - name: Flutter build ipa
+#     #   script: |
+#     #     # 1. Set versions (override detection)
+#     #     VERSION="1.0.4"
+#     #     NEW_BUILD=750  # Must exceed last TestFlight build (748)
 
-#     artifacts:
-#       - build/**/outputs/**/*.aab
-#       - build/**/outputs/**/mapping.txt
-#       - flutter_drive.log
-#     publishing:
-#       email:
-#         recipients:
-#           - solomon@codemagic.io
-#       google_play:
-#         track: internal
-#         credentials: $GOOGLE_PLAY_SERVICE_ACCOUNT_CREDENTIALS
-#         submit_as_draft: true
+#     #     # 2. Update pubspec.yaml
+#     #     sed -i '' "s/^version: .*/version: $VERSION+$NEW_BUILD/" pubspec.yaml
 
-# 1. Get current App Store version (e.g. "1.0.3")
-# TF_VERSION=$(app-store-connect get-latest-testflight-build-number "$APP_STORE_ID" --format json | jq -r '.version' || grep 'version:' pubspec.yaml | awk '{print $2}' | cut -d+ -f1)
-# echo "Detected Version: $TF_VERSION"
+#     #     PLIST="ios/Runner/Info.plist"
+#     #     /usr/libexec/PlistBuddy -c "Set :CFBundleShortVersionString $VERSION" "$PLIST"
+#     #     /usr/libexec/PlistBuddy -c "Set :CFBundleVersion $NEW_BUILD" "$PLIST"
 
-# # 2. Increment patch version (1.0.3 → 1.0.4)
-# MAJOR=$(echo "$TF_VERSION" | cut -d. -f1)
-# MINOR=$(echo "$TF_VERSION" | cut -d. -f2)
-# PATCH=$(echo "$TF_VERSION" | cut -d. -f3)
-# NEW_PATCH=$((PATCH + 1))
-# NEW_VERSION="$MAJOR.$MINOR.$NEW_PATCH"
-
-# # 3. Get and increment TestFlight build number (748 → 749)
-# CURRENT_BUILD=$(app-store-connect get-latest-testflight-build-number "$APP_STORE_ID" || echo 0)
-# NEW_BUILD=$((CURRENT_BUILD + 1))
-
-# # 4. Update all version locations
-# # pubspec.yaml
-# sed -i '' "s/^version: .*/version: $NEW_VERSION+$NEW_BUILD/" pubspec.yaml
-
-# # iOS Info.plist
-# PLIST="ios/Runner/Info.plist"
-# /usr/libexec/PlistBuddy -c "Set :CFBundleShortVersionString $NEW_VERSION" "$PLIST"
-# /usr/libexec/PlistBuddy -c "Set :CFBundleVersion $NEW_BUILD" "$PLIST"
-
-# # 5. Build with new versions
-# echo "Building $NEW_VERSION+$NEW_BUILD (Prev: $STORE_VERSION+$CURRENT_BUILD)"
-
-# flutter build ipa --release \
-#   --build-name="$NEW_VERSION" \
-#   --build-number="$NEW_BUILD" \
-#   --export-options-plist="/Users/builder/export_options.plist"
+#     #     flutter build ipa --release \
+#     #       --build-name="$NEW_VERSION" \
+#     #       --build-number="$NEW_BUILD" \
+#     #       --export-options-plist="/Users/builder/export_options.plist"
+#   artifacts:
+#     - build/ios/ipa/*.ipa
+#     - /tmp/xcodebuild_logs/*.log
+#     - flutter_drive.log
+#   # artifacts:
+#   #   - build/ios/iphonesimulator/Runner.app
+#   publishing:
+#     app_store_connect:
+#       auth: integration
+#       # submit_to_testflight: true
+#       # submit_to_app_store: true
+#       # release_type: AFTER_APPROVAL
