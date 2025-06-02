@@ -13,7 +13,8 @@ workflows:
     scripts:
       - name: Set up local.properties
         script: echo "flutter.sdk=$HOME/programs/flutter" > "$CM_BUILD_DIR/android/local.properties"
-
+      - name: Install Flutter dependencies
+        script: flutter pub get
       - name: Install Shorebird
         script: |
           # Install Shorebird
@@ -27,8 +28,6 @@ workflows:
       - name: Initialize Shorebird
         script: |
           shorebird init --force
-      - name: Install Flutter dependencies
-        script: flutter pub get
       - name: Shorebird Release
         script: |
           shorebird release android \
