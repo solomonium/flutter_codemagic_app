@@ -20,9 +20,11 @@ workflows:
           curl --proto '=https' --tlsv1.2 https://raw.githubusercontent.com/shorebirdtech/install/main/install.sh -sSf | bash
 
           # Add Shorebird to PATH
+          export PATH="/Users/builder/.shorebird/bin:$PATH"
           echo PATH="$HOME/.shorebird/bin:$PATH" >> $CM_ENV
+          /Users/builder/.shorebird/bin/shorebird --version
 
-          shorebird login
+          /Users/builder/.shorebird/bin/shorebird login
       - name: Install Flutter dependencies
         script: flutter pub get
       - name: Shorebird Release
