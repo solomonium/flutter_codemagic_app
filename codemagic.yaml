@@ -9,6 +9,7 @@ workflows:
         - cm_keystore_credentials
       groups:
         - google_credentials
+        - shorebird_credentials
     scripts:
       - name: Set up local.properties
         script: echo "flutter.sdk=$HOME/programs/flutter" > "$CM_BUILD_DIR/android/local.properties"
@@ -20,6 +21,8 @@ workflows:
 
           # Add Shorebird to PATH
           echo PATH="$HOME/.shorebird/bin:$PATH" >> $CM_ENV
+
+          shorebird login
       - name: Install Flutter dependencies
         script: flutter pub get
       - name: Shorebird Release
