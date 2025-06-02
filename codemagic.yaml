@@ -23,9 +23,13 @@ workflows:
           export PATH="/Users/builder/.shorebird/bin:$PATH"
           echo PATH="$HOME/.shorebird/bin:$PATH" >> $CM_ENV
           /Users/builder/.shorebird/bin/shorebird --version
-
           /Users/builder/.shorebird/bin/shorebird login
-      - name: Install Flutter dependencies
+      - name: Initialize Shorebird
+        script: |
+          cd your_project_directory  # Change to your Flutter project root
+          shorebird init --force
+          cat shorebird.yaml  # Verify the file exists
+          - name: Install Flutter dependencies
         script: flutter pub get
       - name: Shorebird Release
         script: |
