@@ -29,7 +29,7 @@ workflows:
         script: |
           shorebird init --force
           cat shorebird.yaml  # Verify the file exists
-          - name: Install Flutter dependencies
+      - name: Install Flutter dependencies
         script: flutter pub get
       - name: Shorebird Release
         script: |
