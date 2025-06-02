@@ -21,9 +21,9 @@ workflows:
           curl --proto '=https' --tlsv1.2 https://raw.githubusercontent.com/shorebirdtech/install/main/install.sh -sSf | bash
 
           # Add Shorebird to PATH
-          # export PATH="/Users/builder/.shorebird/bin:$PATH"
+          export PATH="/Users/builder/.shorebird/bin:$PATH"
           export PATH="$HOME/.shorebird/bin:$PATH" >> $CM_ENV
-          # echo PATH="$HOME/.shorebird/bin:$PATH" >> $CM_ENV
+          echo PATH="$HOME/.shorebird/bin:$PATH" >> $CM_ENV
 
       - name: Initialize Shorebird
         script: |
