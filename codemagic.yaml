@@ -12,15 +12,14 @@ workflows:
     scripts:
       - name: Set up local.properties
         script: echo "flutter.sdk=$HOME/programs/flutter" > "$CM_BUILD_DIR/android/local.properties"
-      - name:
-        scripts:
-          name: Install Shorebird
-          script: |
-            # Install Shorebird
-            curl --proto '=https' --tlsv1.2 https://raw.githubusercontent.com/shorebirdtech/install/main/install.sh -sSf | bash
 
-            # Add Shorebird to PATH
-            echo PATH="$HOME/.shorebird/bin:$PATH" >> $CM_ENV
+      - name: Install Shorebird
+        script: |
+          # Install Shorebird
+          curl --proto '=https' --tlsv1.2 https://raw.githubusercontent.com/shorebirdtech/install/main/install.sh -sSf | bash
+
+          # Add Shorebird to PATH
+          echo PATH="$HOME/.shorebird/bin:$PATH" >> $CM_ENV
       - name: Install Flutter dependencies
         script: flutter pub get
       - name: Shorebird Release
