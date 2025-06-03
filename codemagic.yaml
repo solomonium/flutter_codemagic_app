@@ -30,6 +30,12 @@ workflows:
       - name: Initialize Shorebird
         script: |
           shorebird init --force --verbose
+      - name: Get Flutter Version
+        script: |
+          # Auto-detect project's Flutter version
+          FLUTTER_VERSION=$(cat pubspec.yaml | grep "sdk:" | cut -d':' -f2 | tr -d '" ' | cut -d' ' -f1)
+          echo "FLUTTER_VERSION=$FLUTTER_VERSION" >> $CM_ENV
+          echo "Using Flutter version: $FLUTTER_VERSION"
       - name: Shorebird Release
         script: |
           shorebird release android \
