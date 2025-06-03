@@ -42,7 +42,7 @@ workflows:
         script: |
           shorebird flutter versions list
           shorebird release android \
-            --flutter-version="$SHOREBIRD_RELEASE_VERSION" \
+            --flutter-version="$RELEASE_VERSION" \
             # --release-version="$SHOREBIRD_RELEASE_VERSION"
       # - name: Build AAB with Flutter
       #   script:
