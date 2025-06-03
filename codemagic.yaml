@@ -34,13 +34,15 @@ workflows:
         script: |
           # Auto-detect project's Flutter version
           FLUTTER_VERSION=$(cat pubspec.yaml | grep "sdk:" | cut -d':' -f2 | tr -d '" ' | cut -d' ' -f1)
-          echo "SHOREBIRD_RELEASE_VERSION=$FLUTTER_VERSION" >> $CM_ENV
+          RELEASE_VERSION=$(grep "version:" ./pubspec.yaml | awk '{print $2}')
+          echo "SHOREBIRD_RELEASE_VERSION=$(echo $RELEASE_VERSION)" >> $CM_ENV
+          # echo "SHOREBIRD_RELEASE_VERSION=$FLUTTER_VERSION" >> $CM_ENV
           echo "Using Flutter version: $FLUTTER_VERSION"
       - name: Shorebird Release
         script: |
           shorebird flutter versions list
           shorebird release android \
-            --flutter-version="$FLUTTER_VERSION" \
+            --flutter-version="$SHOREBIRD_RELEASE_VERSION" \
             # --release-version="$SHOREBIRD_RELEASE_VERSION"
       # - name: Build AAB with Flutter
       #   script:
