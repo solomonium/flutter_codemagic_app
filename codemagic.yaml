@@ -38,6 +38,11 @@ workflows:
           echo "SHOREBIRD_RELEASE_VERSION=$(echo $RELEASE_VERSION)" >> $CM_ENV
           # echo "SHOREBIRD_RELEASE_VERSION=$FLUTTER_VERSION" >> $CM_ENV
           echo "Using Flutter version: $FLUTTER_VERSION"
+      - name: Set Java Home
+        script: |
+          echo "org.gradle.java.home=$JAVA_HOME" > android/gradle.properties
+          echo "android.useAndroidX=true" >> android/gradle.properties
+          echo "kotlin.code.style=official" >> android/gradle.properties
       - name: Shorebird Release
         script: |
           shorebird flutter versions list
