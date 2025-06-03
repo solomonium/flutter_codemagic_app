@@ -4,7 +4,7 @@ workflows:
     instance_type: mac_mini_m2
     max_build_duration: 120
     environment:
-      flutter: stable
+      flutter: 3.24.1
       android_signing:
         - cm_keystore_credentials
       groups:
@@ -38,8 +38,9 @@ workflows:
           echo "Using Flutter version: $FLUTTER_VERSION"
       - name: Shorebird Release
         script: |
+          shorebird flutter versions list
           shorebird release android \
-            --flutter-version="$FLUTTER_VERSION"
+            --flutter-version "$FLUTTER_VERSION"
       # - name: Build AAB with Flutter
       #   script:
       #     CURRENT_BUILD_NUMBER=$(google-play get-latest-build-number --package-name "com.solo.flutter_codemagic_app" --tracks="internal")
