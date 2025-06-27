@@ -32,27 +32,59 @@ workflows:
 
       - name: Flutter build ipa
         script: |
-          cd ios
-          pod repo update
-          rm -rf Podfile.lock
-          cd ..
+          cd "$CM_BUILD_DIR"
+          LATEST_VERSION=$(app-store-connect get-latest-app-store-version "$APP_STORE_APPLE_ID") LATEST_BUILD_NUMBER=$(app-store-connect get-latest-app-store-build-number "$APP_STORE_APPLE_ID") echo "App Store version : $LATEST_VERSION" echo "Build number      : $LATEST_BUILD_NUMBER" if [[ $LATEST_BUILD_NUMBER =~ ^([0-9]+)\.([0-9]+)\.([0-9]+)$ ]]; then
+          major=${BASH_REMATCH[1]}
+          minor=${BASH_REMATCH[2]}
+          patch=${BASH_REMATCH[3]}
+          patch=$((patch + 1))
+          if [[ $patch -ge 10 ]]; then patch=0; minor=$((minor + 1)); fi
+          if [[ $minor -ge 10 ]]; then minor=0; major=$((major + 1)); fi
+          NEW_BUILD_NUMBER="$major.$minor.$patch"
+          elif [[ $LATEST_BUILD_NUMBER =~ ^([0-9]+)$ ]]; then
+            if [[ $LATEST_VERSION =~ ^([0-9]+)\.([0-9]+)\.([0-9]+)$ ]]; then
+              major=${BASH_REMATCH[1]}
+              minor=${BASH_REMATCH[2]}
+              patch=${BASH_REMATCH[3]}
+              patch=$((patch + 1))
+              NEW_BUILD_NUMBER="$major.$minor.$patch"
+            else
+              echo "Error: App Store version not semantic"; exit 1
+            fi
+          else
+            echo "Error: build number not semantic or numeric"; exit 1
+          fi echo "New build number -> $NEW_BUILD_NUMBER" agvtool new-version -all
+      - name: Flutter build ipa
+        script: |
           flutter build ipa --release \
-            --build-name=1.0.16 \
-            --build-number=$(($(app-store-connect get-latest-testflight-build-number "$APP_ID") + 1)) \
-            --export-options-plist="/Users/builder/export_options.plist"
-
+            # --build-name=1.0.17 \
+            # --build-number=$(($(app-store-connect get-latest-testflight-build-number "$APP_ID") + 1)) \
+            # --export-options-plist="/Users/builder/export_options.plist"
+      - name: CM_EXPORT_DIR
+        script: cp -r $HOME/Library/Logs/gym "$CM_EXPORT_DIR"
     artifacts:
+      - $HOME/Library/Logs/gym
       - build/ios/ipa/*.ipa
       - /tmp/xcodebuild_logs/*.log
       - flutter_drive.log
     # artifacts:
     #   - build/ios/iphonesimulator/Runner.app
     publishing:
-      app_store_connect:
-        auth: integration
-        submit_to_testflight: true
-        submit_to_app_store: true
-        release_type: AFTER_APPROVAL
+      scripts:
+        name: Check for apk
+        script: |
+          apkPath=$(find build -name "*.apk" | head -1)
+          if [[ -z ${apkPath} ]]
+          then
+            echo "No .apk were found"
+          else
+            echo "Publishing .apk artifacts"
+          fi
+      # app_store_connect:
+      #   auth: integration
+      #   submit_to_testflight: true
+      #   submit_to_app_store: true
+      #   release_type: AFTER_APPROVAL
 
   # script: |
   #   # 1. Set versions (override detection)
@@ -102,6 +134,7 @@ workflows:
   #   /Users/builder/.shorebird/bin/shorebird release android \
   #     --flavor production \
   #     --flutter-version "$FLUTTER_VERSION" \
+
 # workflows:
 #   android-workflow:
 #     name: Android Sample Workflow
