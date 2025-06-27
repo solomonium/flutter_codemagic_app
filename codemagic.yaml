@@ -33,29 +33,46 @@ workflows:
       - name: Increment build number
         script: |
           cd "$CM_BUILD_DIR"
-          LATEST_VERSION=$(app-store-connect get-latest-app-store-version "$APP_STORE_APPLE_ID") LATEST_BUILD_NUMBER=$(app-store-connect get-latest-app-store-build-number "$APP_STORE_APPLE_ID") echo "App Store version : $LATEST_VERSION" echo "Build number      : $LATEST_BUILD_NUMBER" if [[ $LATEST_BUILD_NUMBER =~ ^([0-9]+)\.([0-9]+)\.([0-9]+)$ ]]; then
-          major=${BASH_REMATCH[1]}
-          minor=${BASH_REMATCH[2]}
-          patch=${BASH_REMATCH[3]}
-          patch=$((patch + 1))
-          if [[ $patch -ge 10 ]]; then patch=0; minor=$((minor + 1)); fi
-          if [[ $minor -ge 10 ]]; then minor=0; major=$((major + 1)); fi
-          NEW_BUILD_NUMBER="$major.$minor.$patch"
-          elif [[ $LATEST_BUILD_NUMBER =~ ^([0-9]+)$ ]]; then
+          LATEST_VERSION=$(app-store-connect get-latest-app-store-version "$APP_STORE_APPLE_ID")
+          LATEST_BUILD_NUMBER=$(app-store-connect get-latest-app-store-build-number "$APP_STORE_APPLE_ID")
+
+          echo "Found build number $LATEST_BUILD_NUMBER from App Store version $LATEST_VERSION"
+
+          if [[ $LATEST_BUILD_NUMBER =~ ^([0-9]+)\.([0-9]+)\.([0-9]+)$ ]]; then
+            # Case 1: Build number is already semantic (X.Y.Z)
+            major=${BASH_REMATCH[1]}
+            minor=${BASH_REMATCH[2]}
+            patch=${BASH_REMATCH[3]}
+
+            patch=$((patch + 1))
+            if [[ $patch -ge 10 ]]; then
+              patch=0
+              minor=$((minor + 1))
+            fi
+            if [[ $minor -ge 10 ]]; then
+              minor=0
+              major=$((major + 1))
+            fi
+
+            NEW_BUILD_NUMBER="$major.$minor.$patch"
+          elif [[ $LATEST_BUILD_NUMBER =~ ^[0-9]+$ ]]; then
+            # Case 2: Build number is a plain number (e.g., 8) → Use LATEST_VERSION to generate a new semantic version
             if [[ $LATEST_VERSION =~ ^([0-9]+)\.([0-9]+)\.([0-9]+)$ ]]; then
               major=${BASH_REMATCH[1]}
               minor=${BASH_REMATCH[2]}
               patch=${BASH_REMATCH[3]}
-              patch=$((patch + 1))
-              NEW_BUILD_NUMBER="$major.$minor.$patch"
+              NEW_BUILD_NUMBER="$major.$minor.$LATEST_BUILD_NUMBER"  # Append build number as patch
             else
-              echo "Error: App Store version not semantic"; exit 1
+              echo "Error: App Store version ($LATEST_VERSION) is not semantic!"
+              exit 1
             fi
           else
-            echo "Error: build number not semantic or numeric"; exit 1
+            echo "Error: Build number ($LATEST_BUILD_NUMBER) is neither semantic nor numeric!"
+            exit 1
           fi
-          echo "New build number -> $NEW_BUILD_NUMBER"
-          agvtool new-version -all
+
+          echo "New build number: $NEW_BUILD_NUMBER"
+          agvtool new-version -all "$NEW_BUILD_NUMBER"
       - name: Flutter build ipa
         script: |
           flutter build ipa --release \
