@@ -53,7 +53,9 @@ workflows:
             fi
           else
             echo "Error: build number not semantic or numeric"; exit 1
-          fi echo "New build number -> $NEW_BUILD_NUMBER" agvtool new-version -all
+          fi
+          echo "New build number -> $NEW_BUILD_NUMBER"
+          agvtool new-version -all
       - name: Flutter build ipa
         script: |
           flutter build ipa --release \
@@ -71,15 +73,15 @@ workflows:
     #   - build/ios/iphonesimulator/Runner.app
     publishing:
       scripts:
-        name: Check for apk
-        script: |
-          apkPath=$(find build -name "*.apk" | head -1)
-          if [[ -z ${apkPath} ]]
-          then
-            echo "No .apk were found"
-          else
-            echo "Publishing .apk artifacts"
-          fi
+        - name: Check for apk
+          script: |
+            apkPath=$(find build -name "*.apk" | head -1)
+            if [[ -z ${apkPath} ]]
+            then
+              echo "No .apk were found"
+            else
+              echo "Publishing .apk artifacts"
+            fi
       app_store_connect:
         auth: integration
         submit_to_testflight: true
