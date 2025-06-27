@@ -80,11 +80,11 @@ workflows:
           else
             echo "Publishing .apk artifacts"
           fi
-      # app_store_connect:
-      #   auth: integration
-      #   submit_to_testflight: true
-      #   submit_to_app_store: true
-      #   release_type: AFTER_APPROVAL
+      app_store_connect:
+        auth: integration
+        submit_to_testflight: true
+        submit_to_app_store: true
+        release_type: AFTER_APPROVAL
 
   # script: |
   #   # 1. Set versions (override detection)
@@ -134,7 +134,6 @@ workflows:
   #   /Users/builder/.shorebird/bin/shorebird release android \
   #     --flavor production \
   #     --flutter-version "$FLUTTER_VERSION" \
-
 # workflows:
 #   android-workflow:
 #     name: Android Sample Workflow
