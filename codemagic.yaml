@@ -57,9 +57,9 @@ workflows:
       - name: Flutter build ipa
         script: |
           flutter build ipa --release \
+            --export-options-plist="/Users/builder/export_options.plist"
             # --build-name=1.0.17 \
             # --build-number=$(($(app-store-connect get-latest-testflight-build-number "$APP_ID") + 1)) \
-            # --export-options-plist="/Users/builder/export_options.plist"
       - name: CM_EXPORT_DIR
         script: cp -r $HOME/Library/Logs/gym "$CM_EXPORT_DIR"
     artifacts:
