@@ -30,7 +30,7 @@ workflows:
       - name: Install pods
         script: find . -name "Podfile" -execdir pod install \;
 
-      - name: Flutter build ipa
+      - name: Increment build number
         script: |
           cd "$CM_BUILD_DIR"
           LATEST_VERSION=$(app-store-connect get-latest-app-store-version "$APP_STORE_APPLE_ID") LATEST_BUILD_NUMBER=$(app-store-connect get-latest-app-store-build-number "$APP_STORE_APPLE_ID") echo "App Store version : $LATEST_VERSION" echo "Build number      : $LATEST_BUILD_NUMBER" if [[ $LATEST_BUILD_NUMBER =~ ^([0-9]+)\.([0-9]+)\.([0-9]+)$ ]]; then
