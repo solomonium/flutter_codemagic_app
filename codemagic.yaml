@@ -33,42 +33,61 @@ workflows:
       - name: Increment build number
         script: |
           cd "$CM_BUILD_DIR"
+
+          # Fetch from TestFlight ONLY
           LATEST_VERSION=$(app-store-connect get-latest-testflight-version "$APP_STORE_APPLE_ID")
           LATEST_BUILD_NUMBER=$(app-store-connect get-latest-testflight-build-number "$APP_STORE_APPLE_ID")
 
-          echo "Found build number $LATEST_BUILD_NUMBER from App Store version $LATEST_VERSION"
+          # Debug output - shows raw values
+          echo "RAW VALUES:"
+          echo "LATEST_VERSION='$LATEST_VERSION'"
+          echo "LATEST_BUILD_NUMBER='$LEST_BUILD_NUMBER'"
 
+          # Verify we got valid data
+          if [[ -z "$LATEST_VERSION" ]]; then
+              echo "Error: Could not fetch TestFlight version!"
+              exit 1
+          fi
+
+          if [[ -z "$LATEST_BUILD_NUMBER" ]]; then
+              echo "Error: Could not fetch TestFlight build number!"
+              exit 1
+          fi
+
+          echo "Using TestFlight version: $LATEST_VERSION (Build: $LATEST_BUILD_NUMBER)"
+
+          # Version increment logic
           if [[ $LATEST_BUILD_NUMBER =~ ^([0-9]+)\.([0-9]+)\.([0-9]+)$ ]]; then
-            # Case 1: Build number is already semantic (X.Y.Z)
-            major=${BASH_REMATCH[1]}
-            minor=${BASH_REMATCH[2]}
-            patch=${BASH_REMATCH[3]}
-
-            patch=$((patch + 1))
-            if [[ $patch -ge 10 ]]; then
-              patch=0
-              minor=$((minor + 1))
-            fi
-            if [[ $minor -ge 10 ]]; then
-              minor=0
-              major=$((major + 1))
-            fi
-
-            NEW_BUILD_NUMBER="$major.$minor.$patch"
-          elif [[ $LATEST_BUILD_NUMBER =~ ^[0-9]+$ ]]; then
-            # Case 2: Build number is a plain number (e.g., 8) → Use LATEST_VERSION to generate a new semantic version
-            if [[ $LATEST_VERSION =~ ^([0-9]+)\.([0-9]+)\.([0-9]+)$ ]]; then
+              # Case 1: Semantic version (X.Y.Z)
               major=${BASH_REMATCH[1]}
               minor=${BASH_REMATCH[2]}
               patch=${BASH_REMATCH[3]}
-              NEW_BUILD_NUMBER="$major.$minor.$LATEST_BUILD_NUMBER"  # Append build number as patch
-            else
-              echo "Error: App Store version ($LATEST_VERSION) is not semantic!"
-              exit 1
-            fi
+              
+              patch=$((patch + 1))
+              if [[ $patch -ge 10 ]]; then
+                  patch=0
+                  minor=$((minor + 1))
+              fi
+              if [[ $minor -ge 10 ]]; then
+                  minor=0
+                  major=$((major + 1))
+              fi
+              
+              NEW_BUILD_NUMBER="$major.$minor.$patch"
+          elif [[ $LATEST_BUILD_NUMBER =~ ^[0-9]+$ ]]; then
+              # Case 2: Numeric build number (e.g., 748)
+              if [[ $LATEST_VERSION =~ ^([0-9]+)\.([0-9]+)\.([0-9]+)$ ]]; then
+                  major=${BASH_REMATCH[1]}
+                  minor=${BASH_REMATCH[2]}
+                  patch=${BASH_REMATCH[3]}
+                  NEW_BUILD_NUMBER="$major.$minor.$LATEST_BUILD_NUMBER"
+              else
+                  echo "Error: TestFlight version ($LATEST_VERSION) is not semantic!"
+                  exit 1
+              fi
           else
-            echo "Error: Build number ($LATEST_BUILD_NUMBER) is neither semantic nor numeric!"
-            exit 1
+              echo "Error: Build number ($LATEST_BUILD_NUMBER) is invalid!"
+              exit 1
           fi
 
           echo "New build number: $NEW_BUILD_NUMBER"
