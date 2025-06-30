@@ -2,7 +2,7 @@ workflows:
   ios-workflow:
     name: iOS Workflow
     instance_type: mac_mini_m2
-    max_build_duration: 120
+    max_build_duration: 10
     triggering:
       events:
         - push
@@ -25,6 +25,10 @@ workflows:
     scripts:
       - name: Set up code signing settings on Xcode project
         script: xcode-project use-profiles
+      - name: Timeout here
+        script: |
+          echo "I'm trying to simulate a timeout"
+          sleep 2000
       - name: Get Flutter packages
         script: flutter pub get
       - name: Install pods
@@ -101,22 +105,22 @@ workflows:
       - flutter_drive.log
     # artifacts:
     #   - build/ios/iphonesimulator/Runner.app
-    publishing:
-      scripts:
-        - name: Check for apk
-          script: |
-            apkPath=$(find build -name "*.apk" | head -1)
-            if [[ -z ${apkPath} ]]
-            then
-              echo "No .apk were found"
-            else
-              echo "Publishing .apk artifacts"
-            fi
-      app_store_connect:
-        auth: integration
-        submit_to_testflight: true
-        submit_to_app_store: true
-        release_type: AFTER_APPROVAL
+    # publishing:
+    #   scripts:
+    #     - name: Check for apk
+    #       script: |
+    #         apkPath=$(find build -name "*.apk" | head -1)
+    #         if [[ -z ${apkPath} ]]
+    #         then
+    #           echo "No .apk were found"
+    #         else
+    #           echo "Publishing .apk artifacts"
+    #         fi
+    #   app_store_connect:
+    #     auth: integration
+    #     submit_to_testflight: true
+    #     submit_to_app_store: true
+    #     release_type: AFTER_APPROVAL
 
   # script: |
   #   # 1. Set versions (override detection)
