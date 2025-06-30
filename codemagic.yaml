@@ -40,29 +40,28 @@ workflows:
 
           # Debug output - shows raw values
           echo "RAW VALUES:"
-          echo "LATEST_VERSION='$LATEST_VERSION'"
-          echo "LATEST_BUILD_NUMBER='$LEST_BUILD_NUMBER'"
+          echo "RAW_LATEST_VERSION='$LATEST_VERSION'"
+          echo "RAW_LATEST_BUILD_NUMBER='$LATEST_BUILD_NUMBER'"
 
           # Verify we got valid data
-          if [[ -z "$LATEST_VERSION" ]]; then
+          if [[ -z "$RAW_LATEST_VERSION" ]]; then
               echo "Error: Could not fetch TestFlight version!"
               exit 1
           fi
 
-          if [[ -z "$LATEST_BUILD_NUMBER" ]]; then
+          if [[ -z "$RAW_LATEST_BUILD_NUMBER" ]]; then
               echo "Error: Could not fetch TestFlight build number!"
               exit 1
           fi
 
-          echo "Using TestFlight version: $LATEST_VERSION (Build: $LATEST_BUILD_NUMBER)"
+          echo "Using TestFlight version: $RAW_LATEST_VERSION (Build: $RAW_LATEST_BUILD_NUMBER)"
 
           # Version increment logic
-          if [[ $LATEST_BUILD_NUMBER =~ ^([0-9]+)\.([0-9]+)\.([0-9]+)$ ]]; then
+          if [[ $RAW_LATEST_BUILD_NUMBER =~ ^([0-9]+)\.([0-9]+)\.([0-9]+)$ ]]; then
               # Case 1: Semantic version (X.Y.Z)
               major=${BASH_REMATCH[1]}
               minor=${BASH_REMATCH[2]}
               patch=${BASH_REMATCH[3]}
-              
               patch=$((patch + 1))
               if [[ $patch -ge 10 ]]; then
                   patch=0
@@ -74,15 +73,15 @@ workflows:
               fi
               
               NEW_BUILD_NUMBER="$major.$minor.$patch"
-          elif [[ $LATEST_BUILD_NUMBER =~ ^[0-9]+$ ]]; then
+          elif [[ $RAW_LATEST_BUILD_NUMBER =~ ^[0-9]+$ ]]; then
               # Case 2: Numeric build number (e.g., 748)
-              if [[ $LATEST_VERSION =~ ^([0-9]+)\.([0-9]+)\.([0-9]+)$ ]]; then
+              if [[ $RAW_LATEST_VERSION =~ ^([0-9]+)\.([0-9]+)\.([0-9]+)$ ]]; then
                   major=${BASH_REMATCH[1]}
                   minor=${BASH_REMATCH[2]}
                   patch=${BASH_REMATCH[3]}
-                  NEW_BUILD_NUMBER="$major.$minor.$LATEST_BUILD_NUMBER"
+                  NEW_BUILD_NUMBER="$major.$minor.$RAW_LATEST_BUILD_NUMBER"
               else
-                  echo "Error: TestFlight version ($LATEST_VERSION) is not semantic!"
+                  echo "Error: TestFlight version ($RAW_LATEST_VERSION) is not semantic!"
                   exit 1
               fi
           else
