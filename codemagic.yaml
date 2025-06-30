@@ -92,8 +92,8 @@ workflows:
             --export-options-plist="/Users/builder/export_options.plist"
             # --build-name=1.0.17 \
             # --build-number=$(($(app-store-connect get-latest-testflight-build-number "$APP_ID") + 1)) \
-      - name: CM_EXPORT_DIR
-        script: cp -r $HOME/Library/Logs/gym "$CM_EXPORT_DIR"
+      # - name: CM_EXPORT_DIR
+      #   script: cp -r $HOME/Library/Logs/gym "$CM_EXPORT_DIR"
     artifacts:
       - $HOME/Library/Logs/gym
       - build/ios/ipa/*.ipa
