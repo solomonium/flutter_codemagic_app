@@ -35,8 +35,8 @@ workflows:
           cd "$CM_BUILD_DIR"
 
           # Fetch from TestFlight ONLY
-          # LATEST_VERSION=$(app-store-connect get-latest-testflight-version --pre-release-version="$RELEASE_VERSION" "$APP_STORE_APPLE_ID")
-          LATEST_BUILD_NUMBER=$(app-store-connect get-latest-testflight-build-number --pre-release-version="$RELEASE_VERSION" "$APP_STORE_APPLE_ID")
+          # LATEST_VERSION=$(app-store-connect get-latest-testflight-version "$APP_STORE_APPLE_ID")
+          LATEST_BUILD_NUMBER=$(app-store-connect get-latest-testflight-build-number "$APP_STORE_APPLE_ID")
 
           # Debug output - shows raw values
           echo "RAW VALUES:"
@@ -44,10 +44,10 @@ workflows:
           echo "RAW_LATEST_BUILD_NUMBER='$LATEST_BUILD_NUMBER'"
 
           # Verify we got valid data
-          if [[ -z "$RAW_LATEST_VERSION" ]]; then
-              echo "Error: Could not fetch TestFlight version!"
-              exit 1
-          fi
+          # if [[ -z "$RAW_LATEST_VERSION" ]]; then
+          #     echo "Error: Could not fetch TestFlight version!"
+          #     exit 1
+          # fi
 
           if [[ -z "$RAW_LATEST_BUILD_NUMBER" ]]; then
               echo "Error: Could not fetch TestFlight build number!"
