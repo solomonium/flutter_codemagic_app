@@ -84,6 +84,7 @@ workflows:
           fi
 
           echo "New build number: $NEW_BUILD_NUMBER"
+          cd $CM_BUILD_DIR/ios
           agvtool new-version -all "$NEW_BUILD_NUMBER"
       - name: Flutter build ipa
         script: |
