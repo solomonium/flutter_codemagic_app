@@ -39,58 +39,47 @@ workflows:
         script: |
           cd "$CM_BUILD_DIR"
 
-          # Fetch from TestFlight ONLY
+          # Fetch latest TestFlight build info
+          LATEST_VERSION=$(app-store-connect get-app-info "$APP_STORE_APPLE_ID" --output json | jq -r '.attributes.versionString')
           LATEST_BUILD_NUMBER=$(app-store-connect get-latest-testflight-build-number "$APP_STORE_APPLE_ID")
 
-          # Debug output - shows raw values
-          echo "RAW VALUES:"
-          echo "LATEST_BUILD_NUMBER='$LATEST_BUILD_NUMBER'"
+          # Debug output
+          echo "Current Version: $LATEST_VERSION"
+          echo "Latest TestFlight Build Number: $LATEST_BUILD_NUMBER"
 
-          # Verify we got valid data
+          # Validate inputs
           if [[ -z "$LATEST_BUILD_NUMBER" ]]; then
               echo "Error: Could not fetch TestFlight build number!"
               exit 1
           fi
 
-          echo "Using build number: $LATEST_BUILD_NUMBER"
-
-          # Version increment logic
-          if [[ $LATEST_BUILD_NUMBER =~ ^([0-9]+)\.([0-9]+)\.([0-9]+)$ ]]; then
-              # Case 1: Semantic version (X.Y.Z)
-              major=${BASH_REMATCH[1]}
-              minor=${BASH_REMATCH[2]}
-              patch=${BASH_REMATCH[3]}
-              
-              patch=$((patch + 1))
-              if [[ $patch -ge 10 ]]; then
-                  patch=0
-                  minor=$((minor + 1))
-              fi
-              if [[ $minor -ge 10 ]]; then
-                  minor=0
-                  major=$((major + 1))
-              fi
-              
-              NEW_BUILD_NUMBER="$major.$minor.$patch"
-          elif [[ $LATEST_BUILD_NUMBER =~ ^[0-9]+$ ]]; then
-              # Case 2: Numeric build number (e.g., 748)
-              if [[ -n "$LATEST_VERSION" && $LATEST_VERSION =~ ^([0-9]+)\.([0-9]+)\.([0-9]+)$ ]]; then
-                  major=${BASH_REMATCH[1]}
-                  minor=${BASH_REMATCH[2]}
-                  patch=${BASH_REMATCH[3]}
-                  NEW_BUILD_NUMBER="$major.$minor.$LATEST_BUILD_NUMBER"
-              else
-                  # Fallback if version isn't available
-                  NEW_BUILD_NUMBER="1.0.$LATEST_BUILD_NUMBER"
-              fi
-          else
-              echo "Error: Build number ($LATEST_BUILD_NUMBER) is invalid!"
+          if [[ -z "$LATEST_VERSION" ]]; then
+              echo "Error: Could not fetch current version!"
               exit 1
           fi
 
-          echo "New build number: $NEW_BUILD_NUMBER"
-          cd $CM_BUILD_DIR/ios
-          agvtool new-version -all "$NEW_BUILD_NUMBER"
+          # Version increment logic
+          if [[ $LATEST_VERSION =~ ^([0-9]+)\.([0-9]+)\.([0-9]+)$ ]]; then
+              major=${BASH_REMATCH[1]}
+              minor=${BASH_REMATCH[2]}
+              
+              # For TestFlight: Use build number as patch version + 1
+              NEW_VERSION="$major.$minor.$((LATEST_BUILD_NUMBER + 1))"
+              NEW_BUILD_NUMBER="$NEW_VERSION"  # Keep them in sync
+              
+              echo "New Version: $NEW_VERSION"
+              echo "New Build Number: $NEW_BUILD_NUMBER"
+          else
+              echo "Error: Invalid version format '$LATEST_VERSION'"
+              exit 1
+          fi
+
+          # Update Xcode project version
+          cd ios
+          agvtool new-marketing-version "$NEW_VERSION"  # Update CFBundleShortVersionString
+          agvtool new-version -all "$NEW_BUILD_NUMBER"  # Update CFBundleVersion
+
+          echo "Version updated successfully for TestFlight submission"
       - name: Flutter build ipa
         script: |
           flutter build ipa --release \
@@ -100,7 +89,6 @@ workflows:
       # - name: CM_EXPORT_DIR
       #   script: cp -r $HOME/Library/Logs/gym "$CM_EXPORT_DIR"
     artifacts:
-      - $HOME/Library/Logs/gym
       - build/ios/ipa/*.ipa
       - /tmp/xcodebuild_logs/*.log
       - flutter_drive.log
