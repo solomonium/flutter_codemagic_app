@@ -39,11 +39,11 @@ workflows:
         script: |
           cd "$CM_BUILD_DIR"
 
-          LATEST_VERSION="7.0.0"
+          # LATEST_VERSION="7.0.0"
 
           # 2. Fetch the latest build number from App Store Connect
           # LATEST_BUILD_NUMBER=$(app-store-connect get-latest-testflight-build-number "$APP_STORE_APPLE_ID")
-          LATEST_BUILD_NUMBER=$(app-store-connect apps app-store-versions --version-id=$APP_STORE_APPLE_ID)
+          LATEST_VERSION=$(app-store-connect apps app-store-versions --version-id=$APP_STORE_APPLE_ID)
 
 
           # Debug output
