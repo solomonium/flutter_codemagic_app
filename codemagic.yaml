@@ -2,7 +2,7 @@ workflows:
   ios-workflow:
     name: iOS Workflow
     instance_type: mac_mini_m2
-    max_build_duration: 10
+    max_build_duration: 5
     triggering:
       events:
         - push
@@ -28,7 +28,7 @@ workflows:
       - name: Timeout test
         script: |
           # Will timeout after 30s but continue script
-          sleep 60 || echo "Timeout simulated - continuing"
+          sleep 2000 || echo "Timeout simulated - continuing"
           echo "Running post-timeout operations"
       - name: Get Flutter packages
         script: flutter pub get
