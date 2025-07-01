@@ -25,11 +25,11 @@ workflows:
     scripts:
       - name: Set up code signing settings on Xcode project
         script: xcode-project use-profiles
-      - name: Timeout test
-        script: |
-          # Will timeout after 30s but continue script
-          sleep 200 || echo "Timeout simulated - continuing"
-          echo "Running post-timeout operations"
+      # - name: Timeout test
+      #   script: |
+      #     # Will timeout after 30s but continue script
+      #     sleep 200 || echo "Timeout simulated - continuing"
+      #     echo "Running post-timeout operations"
       - name: Get Flutter packages
         script: flutter pub get
       - name: Install pods
