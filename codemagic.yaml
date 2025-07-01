@@ -2,7 +2,7 @@ workflows:
   ios-workflow:
     name: iOS Workflow
     instance_type: mac_mini_m2
-    max_build_duration: 10
+    max_build_duration: 120
     triggering:
       events:
         - push
@@ -39,47 +39,43 @@ workflows:
         script: |
           cd "$CM_BUILD_DIR"
 
-          # Fetch latest TestFlight build info
-          LATEST_VERSION=$(app-store-connect get-app-info "$APP_STORE_APPLE_ID" --output json | jq -r '.attributes.versionString')
-          LATEST_BUILD_NUMBER=$(app-store-connect get-latest-testflight-build-number "$APP_STORE_APPLE_ID")
+          LATEST_VERSION="7.0.0"
+
+          # 2. Fetch the latest build number from App Store Connect
+          LATEST_BUILD_NUMBER=$(app-store-connect get-latest-testFlight-build-number "$APP_STORE_APPLE_ID")
 
           # Debug output
-          echo "Current Version: $LATEST_VERSION"
-          echo "Latest TestFlight Build Number: $LATEST_BUILD_NUMBER"
+          echo "LATEST Version: $LATEST_VERSION"
+          echo "Latest Build Number: $LATEST_BUILD_NUMBER"
 
-          # Validate inputs
+          # 3. Validate build number
           if [[ -z "$LATEST_BUILD_NUMBER" ]]; then
-              echo "Error: Could not fetch TestFlight build number!"
+              echo "Error: Could not fetch build number!"
               exit 1
           fi
 
-          if [[ -z "$LATEST_VERSION" ]]; then
-              echo "Error: Could not fetch current version!"
-              exit 1
-          fi
-
-          # Version increment logic
+          # 4. Parse LATEST version and increment using build number
           if [[ $LATEST_VERSION =~ ^([0-9]+)\.([0-9]+)\.([0-9]+)$ ]]; then
               major=${BASH_REMATCH[1]}
               minor=${BASH_REMATCH[2]}
               
-              # For TestFlight: Use build number as patch version + 1
+              # Use build number +1 as the new patch version
               NEW_VERSION="$major.$minor.$((LATEST_BUILD_NUMBER + 1))"
-              NEW_BUILD_NUMBER="$NEW_VERSION"  # Keep them in sync
+              NEW_BUILD_NUMBER="$NEW_VERSION"  # Keep them synchronized
               
               echo "New Version: $NEW_VERSION"
               echo "New Build Number: $NEW_BUILD_NUMBER"
+              
+              # 5. Update Xcode project
+              cd ios
+              agvtool new-marketing-version "$NEW_VERSION"  # Updates CFBundleShortVersionString
+              agvtool new-version -all "$NEW_BUILD_NUMBER"  # Updates CFBundleVersion
+              
+              echo "Version updated successfully"
           else
-              echo "Error: Invalid version format '$LATEST_VERSION'"
+              echo "Error: Invalid LATEST version format '$LATEST_VERSION'"
               exit 1
           fi
-
-          # Update Xcode project version
-          cd ios
-          agvtool new-marketing-version "$NEW_VERSION"  # Update CFBundleShortVersionString
-          agvtool new-version -all "$NEW_BUILD_NUMBER"  # Update CFBundleVersion
-
-          echo "Version updated successfully for TestFlight submission"
       - name: Flutter build ipa
         script: |
           flutter build ipa --release \
