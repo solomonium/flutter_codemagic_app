@@ -42,7 +42,7 @@ workflows:
           LATEST_VERSION="7.0.0"
 
           # 2. Fetch the latest build number from App Store Connect
-          LATEST_BUILD_NUMBER=$(app-store-connect get-latest-testFlight-build-number "$APP_STORE_APPLE_ID")
+          LATEST_BUILD_NUMBER=$(app-store-connect get-latest-testflight-build-number "$APP_STORE_APPLE_ID")
 
           # Debug output
           echo "LATEST Version: $LATEST_VERSION"
