@@ -49,13 +49,16 @@ workflows:
       #       --flutter-version="$FLUTTER_VERSION" \
       # - name: List Emulators
       #   script: emulator -list -avds
-      - name: SDK manager
-        script: |
-          export PATH=$PATH:$ANDROID_SDK_ROOT/cmdline-tools/latest/bin:$ANDROID_HOME/platform-tools 
-          sdkmanager --update
-            yes | sdkmanager --licenses
+      # - name: SDK manager
+      #   script: |
+      #     export PATH=$PATH:$ANDROID_SDK_ROOT/cmdline-tools/latest/bin:$ANDROID_HOME/platform-tools
+      #     sdkmanager --update
+      #       yes | sdkmanager --licenses
       - name: Launch emulator
         script: |
+          EMULATOR_ID="Pixel_3a_API_34_extension_level_7_arm64-v8a"
+          echo "Launching emulator: $EMULATOR_ID"
+          flutter emulators --launch $EMULATOR_ID
           cd $ANDROID_HOME/tools && emulator -avd emulator & adb wait-for-device
       - name: Build AAB with Flutter
         script:
