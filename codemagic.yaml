@@ -43,7 +43,7 @@ workflows:
       #     shorebird release android \
       #       --flutter-version="$FLUTTER_VERSION" \
       - name: List Emulators
-          script: emulator -list -avds
+        script: emulator -list -avds
       - name: SDK manager
         script: |
           export PATH=$PATH:$ANDROID_SDK_ROOT/cmdline-tools/latest/bin:$ANDROID_HOME/platform-tools 
