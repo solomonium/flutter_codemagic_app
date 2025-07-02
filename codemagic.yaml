@@ -47,18 +47,16 @@ workflows:
       #     shorebird flutter versions list
       #     shorebird release android \
       #       --flutter-version="$FLUTTER_VERSION" \
-      - name: List Emulators
-        script: emulator -list -avds
-      # - name: SDK manager
-      #   script: |
-      #     export PATH=$PATH:$ANDROID_SDK_ROOT/cmdline-tools/latest/bin:$ANDROID_HOME/platform-tools
-      #     sdkmanager --update
-      #       yes | sdkmanager --licenses
+      - name: Create Android emulator
+        script: |
+          export PATH="$PATH":"$ANDROID_HOME/cmdline-tools/latest/bin"
+
+          echo y | sdkmanager "system-images;android-34;google_apis;x86_64"
+          echo no | avdmanager create avd -n emulator -k "system-images;android-34;google_apis;x86_64" --name "Pixel_7_API_34" -n Android34 --package "system-images;android-34;google_apis;x86_64" --tag "google_apis" --device "Galaxy Nexus"
+
+          emulator -memory 2048 -avd Android34 -no-audio -gpu swiftshader_indirect -debug-init -wipe-data & adb wait-for-device
       - name: Launch emulator
         script: |
-          # EMULATOR_ID="Pixel_3a_API_34_extension_level_7_arm64-v8a"
-          # echo "Launching emulator: $EMULATOR_ID"
-          # flutter emulators --launch $EMULATOR_ID
           cd $ANDROID_HOME/tools && emulator -avd emulator & adb wait-for-device
       - name: Build AAB with Flutter
         script:
