@@ -31,14 +31,14 @@ workflows:
       # - name: Initialize Shorebird
       #   script: |
       #     shorebird init --force --verbose
-      - name: Get Flutter Version
-        script: |
-          # Auto-detect project's Flutter version
-          FLUTTER_VERSION=$(cat pubspec.yaml | grep "sdk:" | cut -d':' -f2 | tr -d '" ' | cut -d' ' -f1)
-          RELEASE_VERSION=$(grep "version:" ./pubspec.yaml | awk '{print $2}')
-          # echo "SHOREBIRD_RELEASE_VERSION=$(echo $RELEASE_VERSION)" >> $CM_ENV
-          # # echo "SHOREBIRD_RELEASE_VERSION=$FLUTTER_VERSION" >> $CM_ENV
-          echo "Using Flutter version: $FLUTTER_VERSION"
+      # - name: Get Flutter Version
+      #   script: |
+      #     # Auto-detect project's Flutter version
+      #     FLUTTER_VERSION=$(cat pubspec.yaml | grep "sdk:" | cut -d':' -f2 | tr -d '" ' | cut -d' ' -f1)
+      #     RELEASE_VERSION=$(grep "version:" ./pubspec.yaml | awk '{print $2}')
+      #     # echo "SHOREBIRD_RELEASE_VERSION=$(echo $RELEASE_VERSION)" >> $CM_ENV
+      #     # # echo "SHOREBIRD_RELEASE_VERSION=$FLUTTER_VERSION" >> $CM_ENV
+      #     echo "Using Flutter version: $FLUTTER_VERSION"
       - name: Build APK debug
         script: |
           flutter build apk --debug
@@ -60,11 +60,11 @@ workflows:
           flutter emulators --launch $EMULATOR_ID
 
           cd $ANDROID_HOME/tools && emulator -avd $EMULATOR_ID & adb wait-for-device
-      - name: Build AAB with Flutter
-        script:
-          CURRENT_BUILD_NUMBER=$(google-play get-latest-build-number --package-name "com.solo.flutter_codemagic_app" --tracks="internal")
-          echo "versionCode=$((CURRENT_BUILD_NUMBER + 1))" > "$CM_BUILD_DIR/version.properties"
-          flutter build appbundle --release --build-number=$(($CURRENT_BUILD_NUMBER + 1))
+      # - name: Build AAB with Flutter
+      #   script:
+      #     CURRENT_BUILD_NUMBER=$(google-play get-latest-build-number --package-name "com.solo.flutter_codemagic_app" --tracks="internal")
+      #     echo "versionCode=$((CURRENT_BUILD_NUMBER + 1))" > "$CM_BUILD_DIR/version.properties"
+      #     flutter build appbundle --release --build-number=$(($CURRENT_BUILD_NUMBER + 1))
     artifacts:
       - build/**/outputs/**/*.aab
       - build/**/outputs/**/mapping.txt
