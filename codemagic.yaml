@@ -1,7 +1,7 @@
 workflows:
   android-workflow:
     name: Android Sample Workflow
-    instance_type: mac_mini_m2
+    instance_type: linux
     max_build_duration: 120
     environment:
       flutter: stable
@@ -51,7 +51,7 @@ workflows:
         script: |
           export PATH="$PATH":"$ANDROID_HOME/cmdline-tools/latest/bin"
           echo y | sdkmanager "system-images;android-34;google_apis;x86_64"
-          echo no | avdmanager create avd -n emulator -k "system-images;android-34;google_apis;x86_64" --device "pixel_7"
+          echo no | avdmanager create avd -n emulator -k "system-images;android-34;google_apis;x86_64" --device "pixel_4"
           emulator -memory 2048 -avd emulator -no-audio -gpu swiftshader_indirect -debug-init -wipe-data & adb wait-for-device
       - name: Launch emulator
         script: |
