@@ -47,15 +47,19 @@ workflows:
       #     shorebird flutter versions list
       #     shorebird release android \
       #       --flutter-version="$FLUTTER_VERSION" \
-      - name: Create Android emulator
-        script: |
-          export PATH="$PATH":"$ANDROID_HOME/cmdline-tools/latest/bin"
-          echo y | sdkmanager "system-images;android-34;google_apis;x86_64"
-          echo no | avdmanager create avd -n emulator -k "system-images;android-34;google_apis;x86_64" --device "pixel_4"
-          emulator -memory 2048 -avd emulator -no-audio -gpu swiftshader_indirect -debug-init -wipe-data & adb wait-for-device
+      # - name: Create Android emulator
+      #   script: |
+      # export PATH="$PATH":"$ANDROID_HOME/cmdline-tools/latest/bin"
+      # echo y | sdkmanager "system-images;android-34;google_apis;x86_64"
+      # echo no | avdmanager create avd -n emulator -k "system-images;android-34;google_apis;x86_64" --device "pixel_4"
+      # emulator -memory 2048 -avd emulator -no-audio -gpu swiftshader_indirect -debug-init -wipe-data & adb wait-for-device
       - name: Launch emulator
         script: |
-          cd $ANDROID_HOME/tools && emulator -avd emulator & adb wait-for-device
+          EMULATOR_ID="pixel_4"
+          echo "Launching emulator: $EMULATOR_ID"
+          flutter emulators --launch $EMULATOR_ID
+
+          cd $ANDROID_HOME/tools && emulator -avd $EMULATOR_ID & adb wait-for-device
       - name: Build AAB with Flutter
         script:
           CURRENT_BUILD_NUMBER=$(google-play get-latest-build-number --package-name "com.solo.flutter_codemagic_app" --tracks="internal")
