@@ -55,12 +55,10 @@ workflows:
       #     emulator -memory 2048 -avd emulator -no-audio -gpu swiftshader_indirect -debug-init -wipe-data & adb wait-for-device
       - name: Launch emulator
         script: |
-          # EMULATOR_ID="pixel_4"
-          # echo "Launching emulator: $EMULATOR_ID"
           flutter emulators --list-avds
           cd $ANDROID_HOME/tools && emulator -avd emulator & adb wait-for-device
           adb install -r build/app/outputs/flutter-apk/app-debug.apk
-          adb shell am start -n com.solo.flutterCodemagicApp/.MainActivity
+          adb shell am start -n com.solo.flutter_codemagic_app/.MainActivity
 
       # - name: Build AAB with Flutter
       #   script:
