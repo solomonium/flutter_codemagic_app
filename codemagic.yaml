@@ -10,6 +10,8 @@ workflows:
       groups:
         - google_credentials
         # - shorebird_credentials
+      vars:
+        JAVA_TOOL_OPTIONS: "-Xmx5g"
     scripts:
       - name: Set up local.properties
         script: echo "flutter.sdk=$HOME/programs/flutter" > "$CM_BUILD_DIR/android/local.properties"
