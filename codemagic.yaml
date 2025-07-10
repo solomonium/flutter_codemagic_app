@@ -35,51 +35,61 @@ workflows:
       - name: Install pods
         script: find . -name "Podfile" -execdir pod install \;
 
-      - name: Increment build number
-        script: |
-          cd "$CM_BUILD_DIR"
+    scripts:
 
-          # LATEST_VERSION="7.0.0"
-          LATEST_VERSION=$(grep 'version:' pubspec.yaml | head -n 1 | awk '{print $2}' | cut -d'+' -f1)
-          echo "App Version: $LATEST_VERSION"
+    - name: Get the latest build number
+      script: |
+        LATEST_BUILD_NUMBER=$(app-store-connect get-latest-app-store-build-number $APP_APPLE_ID)
+        cd ./ios
+        agvtool new-version -all $(($LATEST_BUILD_NUMBER + 1))
+        agvtool new-marketing-version $(grep 'version:' pubspec.yaml | head -n 1 | awk '{print $2}' | cut -d'+' -f1)
+        echo "Updated build number to $(($LATEST_BUILD_NUMBER + 1)) and version to $(grep 'version:' pubspec.yaml | head -n 1 | awk '{print $2
 
-          # 2. Fetch the latest build number from App Store Connect
-          LATEST_BUILD_NUMBER=$(app-store-connect get-latest-testflight-build-number "$APP_STORE_APPLE_ID")
-          # LATEST_VERSION=$(app-store-connect apps app-store-versions --version-id $APP_STORE_APPLE_ID)
+      # - name: Increment build number
+      #   script: |
+      #     cd "$CM_BUILD_DIR"
 
-          # Debug output
-          echo "LATEST Version: $LATEST_VERSION"
-          echo "Latest Build Number: $LATEST_BUILD_NUMBER"
+      #     # LATEST_VERSION="7.0.0"
+      #     LATEST_VERSION=$(grep 'version:' pubspec.yaml | head -n 1 | awk '{print $2}' | cut -d'+' -f1)
+      #     echo "App Version: $LATEST_VERSION"
 
-          # 3. Validate build number
-          if [[ -z "$LATEST_BUILD_NUMBER" ]]; then
-              echo "Error: Could not fetch build number!"
-              exit 1
-          fi
+      #     # 2. Fetch the latest build number from App Store Connect
+      #     LATEST_BUILD_NUMBER=$(app-store-connect get-latest-testflight-build-number "$APP_STORE_APPLE_ID")
+      #     # LATEST_VERSION=$(app-store-connect apps app-store-versions --version-id $APP_STORE_APPLE_ID)
 
-          # 4. Parse LATEST version and increment using build number
-          if [[ $LATEST_VERSION =~ ^([0-9]+)\.([0-9]+)\.([0-9]+)$ ]]; then
-              major=${BASH_REMATCH[1]}
-              minor=${BASH_REMATCH[2]}
+      #     # Debug output
+      #     echo "LATEST Version: $LATEST_VERSION"
+      #     echo "Latest Build Number: $LATEST_BUILD_NUMBER"
 
-              # Use build number +1 as the new patch version
-              NEW_VERSION="$major.$minor.$((LATEST_BUILD_NUMBER + 1))"
-              NEW_BUILD_NUMBER="$NEW_VERSION"  # Keep them synchronized
+      #     # 3. Validate build number
+      #     if [[ -z "$LATEST_BUILD_NUMBER" ]]; then
+      #         echo "Error: Could not fetch build number!"
+      #         exit 1
+      #     fi
 
-              echo "New Version: $NEW_VERSION"
-              echo "New Build Number: $NEW_BUILD_NUMBER"
+      #     # 4. Parse LATEST version and increment using build number
+      #     if [[ $LATEST_VERSION =~ ^([0-9]+)\.([0-9]+)\.([0-9]+)$ ]]; then
+      #         major=${BASH_REMATCH[1]}
+      #         minor=${BASH_REMATCH[2]}
 
-              # 5. Update Xcode project
-              cd ios
-              agvtool new-marketing-version "$NEW_VERSION"  # Updates CFBundleShortVersionString
-              agvtool new-version -all "$NEW_BUILD_NUMBER"  # Updates CFBundleVersion
+      #         # Use build number +1 as the new patch version
+      #         NEW_VERSION="$major.$minor.$((LATEST_BUILD_NUMBER + 1))"
+      #         NEW_BUILD_NUMBER="$NEW_VERSION"  # Keep them synchronized
 
-              echo "Version updated successfully"
-          else
-              echo "Error: Invalid LATEST version format '$LATEST_VERSION'"
-              exit 1
-          fi
-      - name: Flutter build ipa
+      #         echo "New Version: $NEW_VERSION"
+      #         echo "New Build Number: $NEW_BUILD_NUMBER"
+
+      #         # 5. Update Xcode project
+      #         cd ios
+      #         agvtool new-marketing-version "$NEW_VERSION"  # Updates CFBundleShortVersionString
+      #         agvtool new-version -all "$NEW_BUILD_NUMBER"  # Updates CFBundleVersion
+
+      #         echo "Version updated successfully"
+      #     else
+      #         echo "Error: Invalid LATEST version format '$LATEST_VERSION'"
+      #         exit 1
+      #     fi
+    - name: Flutter build ipa
         script: |
           flutter build ipa --release \
             --export-options-plist="/Users/builder/export_options.plist"
