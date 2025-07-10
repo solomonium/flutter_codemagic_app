@@ -35,7 +35,6 @@ workflows:
       - name: Install pods
         script: find . -name "Podfile" -execdir pod install \;
 
-
       - name: Get the latest build number
         script: |
           LATEST_BUILD_NUMBER=$(app-store-connect get-latest-app-store-build-number $APP_APPLE_ID)
@@ -88,7 +87,7 @@ workflows:
       #         echo "Error: Invalid LATEST version format '$LATEST_VERSION'"
       #         exit 1
       #     fi
-    - name: Flutter build ipa
+      - name: Flutter build ipa
         script: |
           flutter build ipa --release \
             --export-options-plist="/Users/builder/export_options.plist"
