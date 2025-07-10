@@ -35,15 +35,14 @@ workflows:
       - name: Install pods
         script: find . -name "Podfile" -execdir pod install \;
 
-    scripts:
 
-    - name: Get the latest build number
-      script: |
-        LATEST_BUILD_NUMBER=$(app-store-connect get-latest-app-store-build-number $APP_APPLE_ID)
-        cd ./ios
-        agvtool new-version -all $(($LATEST_BUILD_NUMBER + 1))
-        agvtool new-marketing-version $(grep 'version:' pubspec.yaml | head -n 1 | awk '{print $2}' | cut -d'+' -f1)
-        echo "Updated build number to $(($LATEST_BUILD_NUMBER + 1)) and version to $(grep 'version:' pubspec.yaml | head -n 1 | awk '{print $2
+      - name: Get the latest build number
+        script: |
+          LATEST_BUILD_NUMBER=$(app-store-connect get-latest-app-store-build-number $APP_APPLE_ID)
+          cd ./ios
+          agvtool new-version -all $(($LATEST_BUILD_NUMBER + 1))
+          agvtool new-marketing-version $(grep 'version:' pubspec.yaml | head -n 1 | awk '{print $2}' | cut -d'+' -f1)
+          echo "Updated build number to $(($LATEST_BUILD_NUMBER + 1)) and version to $(grep 'version:' pubspec.yaml | head -n 1 | awk '{print $2
 
       # - name: Increment build number
       #   script: |
