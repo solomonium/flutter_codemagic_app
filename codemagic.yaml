@@ -45,8 +45,8 @@ workflows:
         script: |
           cd "$CM_BUILD_DIR"
 
-          # LATEST_VERSION="7.0.0"
-          LATEST_VERSION=$(grep 'version:' pubspec.yaml | head -n 1 | awk '{print $2}' | cut -d'+' -f1)
+          LATEST_VERSION="8.0.0"
+          # LATEST_VERSION=$(grep 'version:' pubspec.yaml | head -n 1 | awk '{print $2}' | cut -d'+' -f1)
           echo "App Version: $LATEST_VERSION"
 
           # 2. Fetch the latest build number from App Store Connect
