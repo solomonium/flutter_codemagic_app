@@ -45,17 +45,19 @@ workflows:
         script: |
           cd "$CM_BUILD_DIR"
 
-          LATEST_VERSION="8.0.0"
-          # LATEST_VERSION=$(grep 'version:' pubspec.yaml | head -n 1 | awk '{print $2}' | cut -d'+' -f1)
+          # LATEST_VERSION="8.0.0"
+          LATEST_VERSION=$(grep 'version:' pubspec.yaml | head -n 1 | awk '{print $2}' | cut -d'+' -f1)
           echo "App Version: $LATEST_VERSION"
 
           # 2. Fetch the latest build number from App Store Connect
-          LATEST_BUILD_NUMBER=$(app-store-connect get-latest-testflight-build-number "$APP_STORE_APPLE_ID")
-          # LATEST_VERSION=$(app-store-connect apps app-store-versions --version-id $APP_STORE_APPLE_ID)
+          LATEST_BUILD_VERSION=$(app-store-connect get-latest-testflight-build-number "$APP_STORE_APPLE_ID")
+          # Extract just the build number (last part after dots)
+          LATEST_BUILD_NUMBER=$(echo "$LATEST_BUILD_VERSION" | awk -F. '{print $NF}')
 
           # Debug output
           echo "LATEST Version: $LATEST_VERSION"
-          echo "Latest Build Number: $LATEST_BUILD_NUMBER"
+          echo "Latest Build Version: $LATEST_BUILD_VERSION"
+          echo "Extracted Build Number: $LATEST_BUILD_NUMBER"
 
           # 3. Validate build number
           if [[ -z "$LATEST_BUILD_NUMBER" ]]; then
@@ -69,8 +71,8 @@ workflows:
               minor=${BASH_REMATCH[2]}
 
               # Use build number +1 as the new patch version
-              NEW_VERSION="$major.$minor.$((LATEST_BUILD_NUMBER + 1))"
-              NEW_BUILD_NUMBER="$NEW_VERSION"  # Keep them synchronized
+              NEW_BUILD_NUMBER=$((LATEST_BUILD_NUMBER + 1))
+              NEW_VERSION="$major.$minor.$NEW_BUILD_NUMBER"
 
               echo "New Version: $NEW_VERSION"
               echo "New Build Number: $NEW_BUILD_NUMBER"
