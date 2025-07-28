@@ -29,9 +29,9 @@ workflows:
           # export PATH="$HOME/.shorebird/bin:$PATH" >> $CM_ENV
           # echo PATH="$HOME/.shorebird/bin:$PATH" >> $CM_ENV
 
-      - name: Initialize Shorebird
-        script: |
-          shorebird init --force --verbose
+      # - name: Initialize Shorebird
+      #   script: |
+      #     shorebird init --force --verbose
       - name: Get Flutter Version
         script: |
           # Auto-detect project's Flutter version
