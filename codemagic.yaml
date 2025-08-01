@@ -79,34 +79,30 @@ workflows:
           script: touch ~/SUCCESS
         - name: Report build status
           script: |
-            if [  -f ~/SUCCESS ] ; then
-            echo "Final build status: $CM_BUILD_STATUS"
-            if [ "$CM_BUILD_STATUS" = "success" ]; then
-              curl -X POST https://api.codemagic.io/hooks/67f8f1f04701b071a6f29f3a \
-                -H "Content-Type: application/json" \
-                -d '{
-                  "message": "✅ Build succeeded!",
-                  "build_number": "'"$CM_BUILD_NUMBER"'",
-                  "status": "success"
-                }'
+            if [ -f ~/SUCCESS ]; then
+              echo "Final build status: $CM_BUILD_STATUS"
+              if [ "$CM_BUILD_STATUS" = "success" ]; then
+                curl -X POST https://api.codemagic.io/hooks/67f8f1f04701b071a6f29f3a \
+                  -H "Content-Type: application/json" \
+                  -d '{
+                    "message": "✅ Build succeeded!",
+                    "build_number": "'"$CM_BUILD_NUMBER"'",
+                    "status": "success"
+                  }'
+              else
+                curl -X POST https://api.codemagic.io/hooks/67f8f1f04701b071a6f29f3a \
+                  -H "Content-Type: application/json" \
+                  -d '{
+                    "message": "❌ Build failed!",
+                    "build_number": "'"$CM_BUILD_NUMBER"'",
+                    "status": "failed",
+                    "error": "'"$CM_BUILD_STATUS_MESSAGE"'"
+                  }'
+              fi
             else
-              curl -X POST https://api.codemagic.io/hooks/67f8f1f04701b071a6f29f3a \
-                -H "Content-Type: application/json" \
-                -d '{
-                  "message": "❌ Build failed!",
-                  "build_number": "'"$CM_BUILD_NUMBER"'",
-                  "status": "failed",
-                  "error": "'"$CM_BUILD_STATUS_MESSAGE"'"
-                }'
-            fi
-            else
-              # build failed
+              echo "Build failed before reaching publishing stage"
             fi
 
-      google_play:
-        track: internal
-        credentials: $GOOGLE_PLAY_SERVICE_ACCOUNT_CREDENTIALS
-        submit_as_draft: true
 # workflows:
 # ios-workflow:
 #   name: iOS Workflow
