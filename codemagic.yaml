@@ -70,7 +70,6 @@ workflows:
                 "error_details": "'"$CM_BUILD_STATUS_MESSAGE"'"
               }'
           fi
-        continue_on_error: true
       # - name: Shorebird Release
       #   script: |
       #     shorebird flutter versions list
