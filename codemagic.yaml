@@ -43,33 +43,6 @@ workflows:
       - name: Build APK debug
         script: |
           flutter build apk --debug
-      - name: Call webhook on test completion
-        script: |
-          echo "Current build status: $CM_BUILD_STATUS"
-          echo "Build status message: $CM_BUILD_STATUS_MESSAGE"
-
-          if [ "$CM_BUILD_STATUS" = "success" ]; then
-            echo "Sending success webhook"
-            curl -X POST https://api.codemagic.io/hooks/67f8f1f04701b071a6f29f3a \
-              -H "Content-Type: application/json" \
-              -d '{
-                "message": "Tests passed successfully!",
-                "build_number": "'"$CM_BUILD_NUMBER"'",
-                "workflow_id": "'"$CM_WORKFLOW_ID"'",
-                "status": "success"
-              }'
-          else
-            echo "Sending failure webhook"
-            curl -X POST https://api.codemagic.io/hooks/67f8f1f04701b071a6f29f3a \
-              -H "Content-Type: application/json" \
-              -d '{
-                "message": "Tests failed!",
-                "build_number": "'"$CM_BUILD_NUMBER"'",
-                "workflow_id": "'"$CM_WORKFLOW_ID"'",
-                "status": "failed",
-                "error_details": "'"$CM_BUILD_STATUS_MESSAGE"'"
-              }'
-          fi
       # - name: Shorebird Release
       #   script: |
       #     shorebird flutter versions list
@@ -101,6 +74,35 @@ workflows:
       email:
         recipients:
           - solomon@codemagic.io
+      scripts:
+        - name: Build finished successfully
+          script: touch ~/SUCCESS
+        - name: Report build status
+          script: |
+            if [  -f ~/SUCCESS ] ; then
+            echo "Final build status: $CM_BUILD_STATUS"
+            if [ "$CM_BUILD_STATUS" = "success" ]; then
+              curl -X POST https://api.codemagic.io/hooks/67f8f1f04701b071a6f29f3a \
+                -H "Content-Type: application/json" \
+                -d '{
+                  "message": "✅ Build succeeded!",
+                  "build_number": "'"$CM_BUILD_NUMBER"'",
+                  "status": "success"
+                }'
+            else
+              curl -X POST https://api.codemagic.io/hooks/67f8f1f04701b071a6f29f3a \
+                -H "Content-Type: application/json" \
+                -d '{
+                  "message": "❌ Build failed!",
+                  "build_number": "'"$CM_BUILD_NUMBER"'",
+                  "status": "failed",
+                  "error": "'"$CM_BUILD_STATUS_MESSAGE"'"
+                }'
+            fi
+            else
+              # build failed
+            fi
+
       google_play:
         track: internal
         credentials: $GOOGLE_PLAY_SERVICE_ACCOUNT_CREDENTIALS
