@@ -14,7 +14,7 @@ workflows:
         JAVA_TOOL_OPTIONS: "-Xmx5g"
     scripts:
       - name: Set up local.properties
-        script: echo "flutter.sdk=$HOME/programs/flutter" > "$CM_BUILD_DIR/android/local.properties"
+        script: echo "flutter.sdk=$HOME/programs/flutter" > "$CM_BUILD_DIR/android_//local.properties"
       - name: Install Flutter dependencies
         script: |
           flutter pub get
@@ -85,7 +85,7 @@ workflows:
                 curl -X POST https://api.codemagic.io/hooks/67f8f1f04701b071a6f29f3a \
                   -H "Content-Type: application/json" \
                   -d '{
-                    "message": "✅ Build succeeded!",
+                    "message": "Build succeeded!",
                     "build_number": "'"$CM_BUILD_NUMBER"'",
                     "status": "success"
                   }'
@@ -93,7 +93,7 @@ workflows:
                 curl -X POST https://api.codemagic.io/hooks/67f8f1f04701b071a6f29f3a \
                   -H "Content-Type: application/json" \
                   -d '{
-                    "message": "❌ Build failed!",
+                    "message": "Build failed!",
                     "build_number": "'"$CM_BUILD_NUMBER"'",
                     "status": "failed",
                     "error": "'"$CM_BUILD_STATUS_MESSAGE"'"
