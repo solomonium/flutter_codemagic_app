@@ -18,16 +18,16 @@ workflows:
       - name: Install Flutter dependencies
         script: |
           flutter pub get
-      - name: Install Shorebird
-        script: |
-          # Install Shorebird
-          curl --proto '=https' --tlsv1.2 https://raw.githubusercontent.com/shorebirdtech/install/main/install.sh -sSf | bash
+      # - name: Install Shorebird
+      #   script: |
+      #     Install Shorebird
+      #     curl --proto '=https' --tlsv1.2 https://raw.githubusercontent.com/shorebirdtech/install/main/install.sh -sSf | bash
 
-          # Add Shorebird to PATH
-          echo PATH="$HOME/.shorebird/bin:$PATH" >> $CM_ENV
-          # export PATH="/Users/builder/.shorebird/bin:$PATH"
-          # export PATH="$HOME/.shorebird/bin:$PATH" >> $CM_ENV
-          # echo PATH="$HOME/.shorebird/bin:$PATH" >> $CM_ENV
+      #     # Add Shorebird to PATH
+      #     echo PATH="$HOME/.shorebird/bin:$PATH" >> $CM_ENV
+      #     # export PATH="/Users/builder/.shorebird/bin:$PATH"
+      #     # export PATH="$HOME/.shorebird/bin:$PATH" >> $CM_ENV
+      #     # echo PATH="$HOME/.shorebird/bin:$PATH" >> $CM_ENV
 
       # - name: Initialize Shorebird
       #   script: |
@@ -43,11 +43,22 @@ workflows:
       - name: Build APK debug
         script: |
           flutter build apk --debug
-      - name: Shorebird Release
+      - name: Call webhook on test completion
         script: |
-          shorebird flutter versions list
-          shorebird release android \
-            --flutter-version="$FLUTTER_VERSION" \
+          if [ "$CM_BUILD_STATUS" = "success" ]; then
+            curl -X POST https://api.codemagic.io/hooks/67f8f1f04701b071a6f29f3a \
+              -H "Content-Type: application/json" \
+              -d '{"message": "Tests passed successfully!"}'
+          else
+            curl -X POST https://api.codemagic.io/hooks/67f8f1f04701b071a6f29f3a \
+              -H "Content-Type: application/json" \
+              -d '{"message": "Tests failed!"}'
+          fi
+      # - name: Shorebird Release
+      #   script: |
+      #     shorebird flutter versions list
+      #     shorebird release android \
+      #       --flutter-version="$FLUTTER_VERSION" \
       # - name: Create Android emulator
       #   script: |
       #     export PATH="$PATH":"$ANDROID_HOME/cmdline-tools/latest/bin"
