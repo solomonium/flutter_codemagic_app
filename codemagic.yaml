@@ -47,22 +47,28 @@ workflows:
           cd "$CM_BUILD_DIR"
           LATEST_BUILD_NUMBER=$(app-store-connect get-latest-app-store-build-number "$APP_STORE_APPLE_ID")
 
-          # Parse semantic version and handle version upgrade
-          if [[ $LATEST_BUILD_NUMBER =~ ^([0-9]+)\.([0-9]+)\.([0-9]+)$ ]]; then
+          # If we got just a number (not semantic version), start with 1.0.0
+          if [[ "$LATEST_BUILD_NUMBER" =~ ^[0-9]+$ ]]; then
+            if [[ "$LATEST_BUILD_NUMBER" -lt 1 ]]; then
+              NEW_BUILD_NUMBER="1.0.0"
+            else
+              # Convert build number to semantic version (e.g., build 7 → 1.0.7)
+              NEW_BUILD_NUMBER="1.0.$LATEST_BUILD_NUMBER"
+            fi
+          # If we got a semantic version, process it
+          elif [[ "$LATEST_BUILD_NUMBER" =~ ^([0-9]+)\.([0-9]+)\.([0-9]+)$ ]]; then
             MAJOR=${BASH_REMATCH[1]}
             MINOR=${BASH_REMATCH[2]}
             PATCH=${BASH_REMATCH[3]}
             
-            # If major version is less than 7, upgrade to 7.0.0
             if [[ $MAJOR -lt 7 ]]; then
               NEW_BUILD_NUMBER="7.0.0"
             else
-              # Normal increment: increment patch version
               NEW_PATCH=$((PATCH + 1))
               NEW_BUILD_NUMBER="$MAJOR.$MINOR.$NEW_PATCH"
             fi
           else
-            echo "Error: LATEST_BUILD_NUMBER is not a valid semantic version!"
+            echo "Error: Invalid build number format: $LATEST_BUILD_NUMBER"
             exit 1
           fi
 
