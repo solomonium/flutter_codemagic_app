@@ -75,6 +75,7 @@ workflows:
           echo "Latest build number: $LATEST_BUILD_NUMBER"
           echo "New build number: $NEW_BUILD_NUMBER"
 
+          cd ios
           agvtool new-version -all "$NEW_BUILD_NUMBER"
           agvtool new-marketing-version "$NEW_BUILD_NUMBER"
 
