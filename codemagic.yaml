@@ -30,58 +30,42 @@ workflows:
       - name: Install pods
         script: find . -name "Podfile" -execdir pod install \;
 
-      - name: Get the latest build number
-        script: |
-          LATEST_BUILD_NUMBER=$(app-store-connect get-latest-testflight-build-number $APP_APPLE_ID)
-          cd ./ios
-          agvtool new-version -all $(($LATEST_BUILD_NUMBER + 1))
-
-      # - name: Increment build number
+      # - name: Get the latest build number
       #   script: |
-      #     cd "$CM_BUILD_DIR"
+      #     LATEST_BUILD_NUMBER=$(app-store-connect get-latest-testflight-build-number $APP_APPLE_ID)
+      #     cd ./ios
+      #     agvtool new-version -all $(($LATEST_BUILD_NUMBER + 1))
 
-      #     # LATEST_VERSION="8.0.0"
-      #     LATEST_VERSION=$(grep 'version:' pubspec.yaml | head -n 1 | awk '{print $2}' | cut -d'+' -f1)
-      #     echo "App Version: $LATEST_VERSION"
+      - name: Increment build number
+        script: |
+          cd "$CM_BUILD_DIR"
+          LATEST_BUILD_NUMBER=$(app-store-connect get-latest-app-store-build-number "$APP_STORE_APPLE_ID")
 
-      #     # 2. Fetch the latest build number from App Store Connect
-      #     LATEST_BUILD_VERSION=$(app-store-connect get-latest-testflight-build-number "$APP_STORE_APPLE_ID")
-      #     # Extract just the build number (last part after dots)
-      #     LATEST_BUILD_NUMBER=$(echo "$LATEST_BUILD_VERSION" | awk -F. '{print $NF}')
+          # Parse semantic version and handle version upgrade
+          if [[ $LATEST_BUILD_NUMBER =~ ^([0-9]+)\.([0-9]+)\.([0-9]+)$ ]]; then
+            MAJOR=${BASH_REMATCH[1]}
+            MINOR=${BASH_REMATCH[2]}
+            PATCH=${BASH_REMATCH[3]}
+            
+            # If major version is less than 7, upgrade to 7.0.0
+            if [[ $MAJOR -lt 7 ]]; then
+              NEW_BUILD_NUMBER="7.0.0"
+            else
+              # Normal increment: increment patch version
+              NEW_PATCH=$((PATCH + 1))
+              NEW_BUILD_NUMBER="$MAJOR.$MINOR.$NEW_PATCH"
+            fi
+          else
+            echo "Error: LATEST_BUILD_NUMBER is not a valid semantic version!"
+            exit 1
+          fi
 
-      #     # Debug output
-      #     echo "LATEST Version: $LATEST_VERSION"
-      #     echo "Latest Build Version: $LATEST_BUILD_VERSION"
-      #     echo "Extracted Build Number: $LATEST_BUILD_NUMBER"
+          echo "Latest build number: $LATEST_BUILD_NUMBER"
+          echo "New build number: $NEW_BUILD_NUMBER"
 
-      #     # 3. Validate build number
-      #     if [[ -z "$LATEST_BUILD_NUMBER" ]]; then
-      #         echo "Error: Could not fetch build number!"
-      #         exit 1
-      #     fi
+          agvtool new-version -all "$NEW_BUILD_NUMBER"
+          agvtool new-marketing-version "$NEW_BUILD_NUMBER"
 
-      #     # 4. Parse LATEST version and increment using build number
-      #     if [[ $LATEST_VERSION =~ ^([0-9]+)\.([0-9]+)\.([0-9]+)$ ]]; then
-      #         major=${BASH_REMATCH[1]}
-      #         minor=${BASH_REMATCH[2]}
-
-      #         # Use build number +1 as the new patch version
-      #         NEW_BUILD_NUMBER=$((LATEST_BUILD_NUMBER + 1))
-      #         NEW_VERSION="$major.$minor.$NEW_BUILD_NUMBER"
-
-      #         echo "New Version: $NEW_VERSION"
-      #         echo "New Build Number: $NEW_BUILD_NUMBER"
-
-      #         # 5. Update Xcode project
-      #         cd ios
-      #         agvtool new-marketing-version "$NEW_VERSION"  # Updates CFBundleShortVersionString
-      #         agvtool new-version -all "$NEW_BUILD_NUMBER"  # Updates CFBundleVersion
-
-      #         echo "Version updated successfully"
-      #     else
-      #         echo "Error: Invalid LATEST version format '$LATEST_VERSION'"
-      #         exit 1
-      #     fi
       - name: Flutter build ipa
         script: |
           flutter build ipa --release \
@@ -255,3 +239,47 @@ workflows:
 #               echo "Build failed before reaching publishing stage"
 #             fi
 
+#     cd "$CM_BUILD_DIR"
+
+#     # LATEST_VERSION="8.0.0"
+#     LATEST_VERSION=$(grep 'version:' pubspec.yaml | head -n 1 | awk '{print $2}' | cut -d'+' -f1)
+#     echo "App Version: $LATEST_VERSION"
+
+#     # 2. Fetch the latest build number from App Store Connect
+#     LATEST_BUILD_VERSION=$(app-store-connect get-latest-testflight-build-number "$APP_STORE_APPLE_ID")
+#     # Extract just the build number (last part after dots)
+#     LATEST_BUILD_NUMBER=$(echo "$LATEST_BUILD_VERSION" | awk -F. '{print $NF}')
+
+#     # Debug output
+#     echo "LATEST Version: $LATEST_VERSION"
+#     echo "Latest Build Version: $LATEST_BUILD_VERSION"
+#     echo "Extracted Build Number: $LATEST_BUILD_NUMBER"
+
+#     # 3. Validate build number
+#     if [[ -z "$LATEST_BUILD_NUMBER" ]]; then
+#         echo "Error: Could not fetch build number!"
+#         exit 1
+#     fi
+
+#     # 4. Parse LATEST version and increment using build number
+#     if [[ $LATEST_VERSION =~ ^([0-9]+)\.([0-9]+)\.([0-9]+)$ ]]; then
+#         major=${BASH_REMATCH[1]}
+#         minor=${BASH_REMATCH[2]}
+
+#         # Use build number +1 as the new patch version
+#         NEW_BUILD_NUMBER=$((LATEST_BUILD_NUMBER + 1))
+#         NEW_VERSION="$major.$minor.$NEW_BUILD_NUMBER"
+
+#         echo "New Version: $NEW_VERSION"
+#         echo "New Build Number: $NEW_BUILD_NUMBER"
+
+#         # 5. Update Xcode project
+#         cd ios
+#         agvtool new-marketing-version "$NEW_VERSION"  # Updates CFBundleShortVersionString
+#         agvtool new-version -all "$NEW_BUILD_NUMBER"  # Updates CFBundleVersion
+
+#         echo "Version updated successfully"
+#     else
+#         echo "Error: Invalid LATEST version format '$LATEST_VERSION'"
+#         exit 1
+#     fi
