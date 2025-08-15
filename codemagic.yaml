@@ -88,7 +88,6 @@ workflows:
     artifacts:
       - build/ios/ipa/*.ipa
       - /tmp/xcodebuild_logs/*.log
-      - $FCI_EXPORT_DIR/Logs/TestFlight/*.log
     # artifacts:
     #   - build/ios/iphonesimulator/Runner.app
     publishing:
